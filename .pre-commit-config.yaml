@@ -11,6 +11,11 @@ repos:
     -   id: end-of-file-fixer
     -   id: check-yaml
     -   id: check-added-large-files
+        exclude: |
+            (?x)^(
+               static/assets/webfonts/fa-solid-900.svg |
+               static/assets/webfonts/fa-brands-400.svg
+            )$
     -   id: check-json
     -   id: check-toml
     -   id: check-merge-conflict

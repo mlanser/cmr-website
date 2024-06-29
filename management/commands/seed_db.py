@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -11,22 +12,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if Author.objects.exists():
             raise CommandError(
-                'This command cannot be run when any authors exist to guard '
-                + 'against accidental use on production.'
+                'This command cannot be run when any authors exist to guard against accidental use on production.'
             )
 
         self.stdout.write('Seeding database...')
 
         update_site()
-
         create_authors_and_books()
 
         self.stdout.write('Done.')
 
 
 def update_site():
-    domain = 'localhost:8000'
-    Site.objects.filter(domain='example.com').update(domain=domain, name=domain)
+    domain = settings.LOCAL_DEV_DOMAIN
+    Site.objects.filter(domain=settings.PROD_DOMAIN).update(domain=domain, name=domain)
 
 
 def create_authors_and_books():

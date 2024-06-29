@@ -6,6 +6,6 @@ class CMRAppConfig(AppConfig):
     name = 'CMR'
 
     def ready(self) -> None:
-        from example.checks import check_dev_mode
+        from CMR.checks import check_dev_mode
 
         checks.register(check_dev_mode)

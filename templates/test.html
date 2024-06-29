@@ -1,0 +1,74 @@
+{% extends "base/main.html" %}
+{% load static %}
+
+{% block features %}
+{% include "base/features_sctn.html" %}
+{% endblock features %}
+
+{% block banner %}
+{% include "base/banner_sctn.html" %}
+{% endblock banner %}
+
+{% block content %}
+<!-- Post -->
+<article class="box post">
+    <header>
+        <h2><a href="#">A lectus cras mi vis tortor cep dictum dui.<br />
+        sed aenean nec luctus.</a></h2>
+    </header>
+    <a href="#" class="image featured"><img src="{% static 'images/pic04.jpg' %}" alt="" /></a>
+    <h3>A urna neque ut aenean?</h3>
+    <p>Phasellus laoreet massa id justo mattis pharetra. Fusce suscipit
+    ligula vel quam viverra sit amet mollis tortor congue. Sed quis mauris
+    sit amet magna accumsan tristique. Curabitur leo nibh, rutrum eu malesuada
+    in, tristique at erat lorem ipsum dolor sit amet lorem ipsum sed consequat
+    magna tempus veroeros lorem sed tempus aliquam lorem ipsum veroeros
+    consequat magna tempus lorem ipsum consequat Phasellus laoreet massa id
+    justo mattis pharetra. Fusce suscipit ligula vel quam viverra sit amet
+    mollis tortor congue. Sed quis mauris sit amet magna accumsan tristique.
+    Curabitur leo nibh, rutrum eu malesuada in tristique.</p>
+    <ul class="actions">
+        <li><a href="#" class="button icon solid fa-file">Continue Reading</a></li>
+    </ul>
+</article>
+
+<!-- Post -->
+<article class="box post">
+    <header>
+        <h2><a href="#">At vel enim, arcu ligula ut tempor
+        sed augue dictum enim aenean</a></h2>
+    </header>
+    <a href="#" class="image featured"><img src="{% static 'images/pic05.jpg' %}" alt="" /></a>
+    <h3>Sed ornare varius velit non dui ante</h3>
+    <p>Phasellus laoreet massa id justo mattis pharetra. Fusce suscipit
+    ligula vel quam viverra sit amet mollis tortor congue. Sed quis mauris
+    sit amet magna accumsan tristique. Curabitur leo nibh, rutrum eu malesuada
+    in, tristique at erat lorem ipsum dolor sit amet lorem ipsum sed consequat
+    consequat magna tempus lorem ipsum consequat Phasellus laoreet massa id
+    in, tristique at erat lorem ipsum dolor sit amet lorem ipsum sed consequat
+    magna tempus veroeros lorem sed tempus aliquam lorem ipsum veroeros
+    consequat magna tempus lorem ipsum consequat Phasellus laoreet massa id
+    justo mattis pharetra. Fusce suscipit ligula vel quam viverra sit amet
+    mollis tortor congue. Sed quis mauris sit amet magna accumsan tristique.
+    Curabitur leo nibh, rutrum malesuada.</p>
+    <p>Erat lorem ipsum veroeros consequat magna tempus lorem ipsum consequat
+    Phasellus laoreet massa id justo mattis pharetra. Fusce suscipit ligula
+    vel quam viverra sit amet mollis tortor congue. Sed quis mauris sit amet
+    magna accumsan tristique. Curabitur leo nibh, rutrum eu malesuada in,
+    tristique at erat. Curabitur leo nibh, rutrum eu malesuada in, tristique
+    at erat lorem ipsum dolor sit amet lorem ipsum sed consequat magna
+    tempus veroeros lorem sed tempus aliquam lorem ipsum veroeros consequat
+    magna tempus.</p>
+    <ul class="actions">
+        <li><a href="#" class="button icon solid fa-file">Continue Reading</a></li>
+    </ul>
+</article>
+{% endblock content %}
+
+{% block sidebar_excerpts %}
+{% include "base/sbar_excerpts.html" %}
+{% endblock sidebar_excerpts %}
+
+{% block sidebar_highlights %}
+{% include "base/sbar_highlights.html" %}
+{% endblock sidebar_highlights %}

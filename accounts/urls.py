@@ -1,5 +1,5 @@
 """
-URL configuration for CMR Members app.
+URL configuration for CMR Accounts app.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
@@ -17,9 +17,9 @@ Including another URLconf
 
 from django.urls import path
 
-from members import views
+from accounts import views
 
 urlpatterns = [
-    path('<int:memberID>/', views.member, name='member'),
-    path('list/', views.members, name='members'),
+    path('<int:userID>/', views.user_profile, name='user'),
+    path('list/', views.user_list, name='user_list'),
 ]

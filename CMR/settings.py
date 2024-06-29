@@ -20,9 +20,12 @@ SITE_ID = 1
 
 # Set up `env` object
 env = environ.Env(DEBUG=(bool, False))  # Set casting and default value
+
 # fmtoff
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+PROJECT_DIR = Path(__file__).resolve().parent
+# PROJECT_DIR = Path(__file__).absolute().parent
 
 # Read environment variables from `.env` file
 try:
@@ -35,6 +38,13 @@ if command != 'test':
 
 # False if not in os.environ because of casting above
 DEBUG = env('DEBUG')
+
+# Should robots.txt allow everything to be crawled?
+ALLOW_ROBOTS = False
+
+# Domains for DEV and PROD
+LOCAL_DEV_DOMAIN = env('LOCAL_DEV_DOMAIN')
+PROD_DOMAIN = env('PROD_DOMAIN')
 
 # Raises Django's ImproperlyConfigured
 # exception if SECRET_KEY not in os.environ
@@ -96,7 +106,6 @@ AUTHENTICATION_BACKENDS = [
 
 # Application definition
 INSTALLED_APPS = [
-    # 'djangocms_admin_style',                                            # Required by `django-cms`
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -105,7 +114,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django_extensions',
+    'django_filters',
     'imagekit',
+    'accounts',
+    'rest_framework',
+    'corsheaders',
     # -- 'allauth' apps ---------------
     'allauth',
     'allauth.account',
@@ -113,38 +126,37 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.openid',
-    # -- 'django-cms' apps ------------
-    'cms',
-    'menus',
-    'treebeard',
-    'sekizai',
-    'djangocms_versioning',
-    'djangocms_alias',
-    'filer',
-    'easy_thumbnails',
-    'djangocms_file',
-    'djangocms_picture',
-    'djangocms_video',
-    'djangocms_googlemap',
-    'djangocms_snippet',
-    'djangocms_style',
-    'djangocms_text_ckeditor',
+    # -- 'wagtail' apps ------------
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.contrib.routable_page',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail',
+    'taggit',
+    'modelcluster',
     # ---------------------------------
-    'blog',
-    'events',
+    # 'blog',
+    # 'events',
     'home',
-    'locations',
-    'members',
-    'roadnames',
-    'cmr_layouts',
-    'cmr_pages',
-    'cmr_projects',
-    'nrhs_pages',
-    'nrhs_projects',
+    # 'locations',
+    # 'roadnames',
+    # 'cmr_layouts',
+    # 'cmr_pages',
+    # 'cmr_projects',
+    # 'nrhs_pages',
+    # 'nrhs_projects',
 ]
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 MIDDLEWARE = [
-    'cms.middleware.utils.ApphookReloadMiddleware',  # Recommended for `django-cms`
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -152,14 +164,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.locale.LocaleMiddleware',  # Required by `django-cms`
-    'cms.middleware.user.CurrentUserMiddleware',  # Required by `django-cms`
-    'cms.middleware.page.CurrentPageMiddleware',  # Required by `django-cms`
-    'cms.middleware.toolbar.ToolbarMiddleware',  # Required by `django-cms`
-    'cms.middleware.language.LanguageCookieMiddleware',  # Required by `django-cms`
+    'django.middleware.security.SecurityMiddleware',  # Required by `wagtail`
     'allauth.account.middleware.AccountMiddleware',  # Required by `allauth`
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',  # Required by `wagtail`
 ]
-
 ROOT_URLCONF = 'CMR.urls'
 
 TEMPLATES = [
@@ -175,32 +183,24 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.request',  # Required by `allauth`
-                'django.template.context_processors.i18n',  # Required by `django-cms`
-                'sekizai.context_processors.sekizai',  # Required by `django-cms`
-                'cms.context_processors.cms_settings',  # Required by `django-cms`
+                'wagtail.contrib.settings.context_processors.settings',
             ],
         },
     },
 ]
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'  # Recommended for `django-cms`
-
-CMS_TEMPLATES = [  # Required by `django-cms`
-    ('base.html', 'Base template w/o panels'),
-    ('base_rht.html', 'Base template w panel on right'),
-    ('base_lft.html', 'Base template w panmel on left'),
-]
-THUMBNAIL_HIGH_RESOLUTION = True  # Required by `django-cms`
-
-THUMBNAIL_PROCESSORS = (  # Required by `django-cms`
-    'easy_thumbnails.processors.colorspace',
-    'easy_thumbnails.processors.autocrop',
-    'filer.thumbnail_processors.scale_and_crop_with_subject_location',
-    'easy_thumbnails.processors.filters',
-)
-
 WSGI_APPLICATION = 'CMR.wsgi.application'
+
+# CORS Headers
+# https://github.com/adamchainz/django-cors-headers
+CORS_ALLOWED_ORIGINS = [
+    'https://f451labs.dev',
+    'https://f451labs.com',
+    'https://cmr.f451labs.dev',
+    'https://cmr.f451labs.com',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 
 
 # Password validation
@@ -220,31 +220,37 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+ACCOUNT_EMAIL_REQUIRED = True  # Required by `allauth`
+ACCOUNT_EMAIL_VERIFICATION = env('ACCOUNT_EMAIL_VERIFICATION')  # Required by `allauth`
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
-LANGUAGES = [
-    ('en', 'English'),
-    ('de', 'German'),
-    ('se', 'Swedish'),
-]
-LANGUAGE_CODE = 'en'
-
+LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-STATIC_URL = 'static/'
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+STATICFILES_DIRS = [
+    # BASE_DIR / 'static',
+    BASE_DIR / 'media',
+]
+
 STATIC_ROOT = BASE_DIR / 'static'
+STATIC_URL = '/static/'
 
-MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
 
+WAGTAILADMIN_BASE_URL = '/admin/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -255,32 +261,90 @@ DEFAULT_LIST_LEN = 10
 # 'allauth' Provider specific settings
 # https://docs.allauth.org/en/latest/introduction/index.html
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
+    'github': {
         # For each OAuth based provider, either add a ``SocialApp``
         # (``socialaccount`` app) containing the required client
         # credentials, or list them here:
+        'APP': {
+            'client_id': env('GITHUB_SOCIAL_AUTH_CLIENT_ID'),
+            'secret': env('GITHUB_SOCIAL_AUTH_CLIENT_SECRET'),
+        }
+    },
+    'google': {
         'APP': {
             'client_id': env('GOOGLE_SOCIAL_AUTH_CLIENT_ID'),
             'secret': env('GOOGLE_SOCIAL_AUTH_CLIENT_SECRET'),
             'key': env('GOOGLE_SOCIAL_AUTH_CLIENT_KEY'),
         }
-    }
+    },
 }
 
-# Misc. settings
+# -- Misc. settings --
 ADMINS = tuple(parseaddr(email) for email in env.list('ADMINS'))
 MANAGERS = tuple(parseaddr(email) for email in env.list('MANAGERS'))
 
-# Required by `django-debug-toolbar`
-INTERNAL_IPS = ['127.0.0.1']
 TESTING = 'test' in sys.argv
-if not TESTING:
-    INSTALLED_APPS = [
-        *INSTALLED_APPS,
-        'debug_toolbar',
-    ]
-    MIDDLEWARE = [
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-        *MIDDLEWARE,
-    ]
+
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    # WAGTAILADMIN_BASE_URL required for notification emails
+    WAGTAILADMIN_BASE_URL = 'http://localhost:8000'
+    ALLOWED_HOSTS = ['*']
+
+    if not TESTING:
+        # Required by `django-debug-toolbar`
+        INTERNAL_IPS = ['127.0.0.1']
+
+        INSTALLED_APPS = [
+            *INSTALLED_APPS,
+            'debug_toolbar',
+        ]
+        MIDDLEWARE = [
+            'debug_toolbar.middleware.DebugToolbarMiddleware',
+            *MIDDLEWARE,
+        ]
+
+
+# -- Wagtail settings --
+WAGTAIL_SITE_NAME = 'cmr'
+
+WAGTAIL_I18N_ENABLED = True
+
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
+    ('en', 'English'),
+]
+
+WAGTAILIMAGES_AVIF_QUALITY = 60
+
+# ADMIN_PASSWORD = env('ADMIN_PASSWORD', 'changeme')
+
+# Content Security policy settings
+# http://django-csp.readthedocs.io/en/latest/configuration.html
+
+# Only enable CSP when enabled through environment variables.
+# if "CSP_DEFAULT_SRC" in os.environ:
+#     MIDDLEWARE.append("csp.middleware.CSPMiddleware")
+
+#     # Only report violations, don't enforce policy
+#     CSP_REPORT_ONLY = True
+
+#     # The “special” source values of 'self', 'unsafe-inline', 'unsafe-eval', and 'none' must be quoted!
+#     # e.g.: CSP_DEFAULT_SRC = "'self'" Without quotes they will not work as intended.
+
+#     CSP_DEFAULT_SRC = os.environ.get("CSP_DEFAULT_SRC").split(",")
+#     if "CSP_SCRIPT_SRC" in os.environ:
+#         CSP_SCRIPT_SRC = os.environ.get("CSP_SCRIPT_SRC").split(",")
+#     if "CSP_STYLE_SRC" in os.environ:
+#         CSP_STYLE_SRC = os.environ.get("CSP_STYLE_SRC").split(",")
+#     if "CSP_IMG_SRC" in os.environ:
+#         CSP_IMG_SRC = os.environ.get("CSP_IMG_SRC").split(",")
+#     if "CSP_CONNECT_SRC" in os.environ:
+#         CSP_CONNECT_SRC = os.environ.get("CSP_CONNECT_SRC").split(",")
+#     if "CSP_FONT_SRC" in os.environ:
+#         CSP_FONT_SRC = os.environ.get("CSP_FONT_SRC").split(",")
+#     if "CSP_BASE_URI" in os.environ:
+#         CSP_BASE_URI = os.environ.get("CSP_BASE_URI").split(",")
+#     if "CSP_OBJECT_SRC" in os.environ:
+#         CSP_OBJECT_SRC = os.environ.get("CSP_OBJECT_SRC").split(",")
+
 # fmton

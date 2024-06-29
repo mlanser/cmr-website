@@ -8,7 +8,9 @@ class Event(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     date = models.DateTimeField()
-    location = models.CharField(max_length=100)
+    location = models.CharField(
+        max_length=100
+    )  # TODO: This should be a ForeignKey to a Location model
     image = models.ImageField(upload_to='events/images/')
 
     def __str__(self):
