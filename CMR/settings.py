@@ -152,7 +152,7 @@ INSTALLED_APPS = [
     'modelcluster',
     # 'wagtailfontawesomesvg',
     # ---------------------------------
-    # 'blog',
+    'blog',
     # 'events',
     'home',
     # 'locations',
@@ -250,14 +250,32 @@ STATICFILES_FINDERS = [
 ]
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-    BASE_DIR / 'media',
+    PROJECT_DIR / 'static',
 ]
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'static'
+
 MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 WAGTAILADMIN_BASE_URL = '/admin/'
+
+# Default storage settings, with the staticfiles storage updated.
+# See https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-STORAGES
+STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
+    # ManifestStaticFilesStorage is recommended in production, to prevent
+    # outdated JavaScript / CSS assets being served from cache
+    # (e.g. after a Wagtail upgrade).
+    # See https://docs.djangoproject.com/en/5.0/ref/contrib/staticfiles/#manifeststaticfilesstorage
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage',
+    },
+}
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -322,6 +340,35 @@ WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
 ]
 
 WAGTAILIMAGES_AVIF_QUALITY = 60
+
+# Search
+# https://docs.wagtail.org/en/stable/topics/search/backends.html
+WAGTAILSEARCH_BACKENDS = {
+    'default': {
+        'BACKEND': 'wagtail.search.backends.database',
+    }
+}
+
+# Base URL to use when referring to full URLs within the Wagtail admin backend -
+# e.g. in notification emails. Don't include '/admin' or a trailing slash
+WAGTAILADMIN_BASE_URL = env('WAGTAILADMIN_BASE_URL')
+
+# Allowed file extensions for documents in the document library.
+# This can be omitted to allow all files, but note that this may present a security risk
+# if untrusted users are allowed to upload files -
+# see https://docs.wagtail.org/en/stable/advanced_topics/deploying.html#user-uploaded-files
+WAGTAILDOCS_EXTENSIONS = [
+    'csv',
+    'docx',
+    'key',
+    'odt',
+    'pdf',
+    'pptx',
+    'rtf',
+    'txt',
+    'xlsx',
+    'zip',
+]
 
 # ADMIN_PASSWORD = env('ADMIN_PASSWORD', 'changeme')
 

@@ -44,17 +44,16 @@ urlpatterns = [
     # path("api/v2/", api_router.urls),
     # Optional URL for including your own vanilla Django urls/views
     # re_path('my_app', include('my_app.urls')),
-    # path('news/', home_views.news, name='news'),
-    # path('layouts/', include('cmr_layouts.urls')),
-    # path('members/', include('accounts.urls')),
+    # re_path('layouts/', include('cmr_layouts.urls')),
+    # re_path('members/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),  # Required by `allauth`
-    path('home/', home_views.home, name='home'),
 ]
 
 # Following is for local DEV in DEBUG mode only!
 if settings.DEBUG:
     from django.conf.urls.static import static
     from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+    from django.views.generic import TemplateView
     from django.views.generic.base import RedirectView
 
     # For DEV only. For PROD, use a web server like Nginx or Apache to serve static files
@@ -75,6 +74,8 @@ if settings.DEBUG:
     if not settings.TESTING:
         urlpatterns += [
             path('__debug__/', include(debug_toolbar.urls)),
+            path('test404/', TemplateView.as_view(template_name='404.html')),
+            path('test500/', TemplateView.as_view(template_name='500.html')),
         ]
 
 # For anything not caught by a more specific rule above, hand over to
