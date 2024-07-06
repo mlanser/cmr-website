@@ -46,6 +46,7 @@ html5lib==1.1
 identify==2.5.36
 idna==3.7
 iniconfig==2.0.0
+isort==5.13.2
 l18n==2021.3
 laces==0.1.1
 lxml==5.2.2
@@ -92,6 +93,7 @@ typing-extensions==4.12.2
 urllib3==2.2.2
 virtualenv==20.26.3
 wagtail==6.1.2
+wagtail-font-awesome-svg==1.0.1
 wagtail-markdown==0.12.1
 webencodings==0.5.1
 willow==1.8.0
