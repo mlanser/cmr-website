@@ -24,7 +24,7 @@
         {% endif %}
 
         {# Global stylesheets #}
-        <link rel="stylesheet" type="text/css" href="{% static 'css/learningwagtail.css' %}">
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/main.css' %}">
 
         {% block extra_css %}
         {# Override this in templates to add extra stylesheets #}
@@ -36,8 +36,10 @@
 
         {% block content %}{% endblock %}
 
+        {% include "includes/wagtail_footer.html" %}
+
         {# Global javascript #}
-        <script type="text/javascript" src="{% static 'js/learningwagtail.js' %}"></script>
+        <script type="text/javascript" src="{% static 'assets/js/main.js' %}"></script>
 
         {% block extra_js %}
         {# Override this in templates to add extra javascript #}

@@ -1,0 +1,74 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+<section id="contact" class="wrapper split">
+	<div class="inner">
+		<section>
+			<h2>Send us a message</h2>
+			<form method="post" action="#">
+				<div class="row gtr-uniform">
+					<div class="col-6 col-12-large col-6-medium col-12-xsmall">
+						<label for="name">Name</label>
+						<input type="text" name="name" id="name" />
+					</div>
+					<div class="col-6 col-12-large col-6-medium col-12-xsmall">
+						<label for="email">Email</label>
+						<input type="email" name="email" id="email" />
+					</div>
+					<div class="col-12">
+						<label for="message">Message</label>
+						<textarea name="message" id="message" rows="5"></textarea>
+					</div>
+					<div class="col-12">
+						<ul class="actions">
+							<li><input type="submit" value="Send Message" class="primary" /></li>
+							<li><input type="reset" value="Reset" /></li>
+						</ul>
+					</div>
+				</div>
+			</form>
+		</section>
+		{% with youtube=settings.base.ContactSettings.youtube instagram=settings.base.ContactSettings.instagram visit_addr=settings.base.ContactSettings.visit_addr visit_hours=settings.base.ContactSettings.visit_hours %}
+			{% if youtube or instagram or visit_addr %}
+			<section>
+				<h2>Other ways to reach us</h2>
+				<ul class="bulleted-icons">
+					{% if youtube %}
+					<li>
+						<span class="icon-wrapper"><span class="icon brands fa-youtube"></span></span>
+						<h3>Youtube</h3>
+						<p><a href="https://www.youtube.com/@{{ youtube }}">@{{ youtube }}</a></p>
+					</li>
+					{% endif %}
+					{% if instagram %}
+					<li>
+						<span class="icon-wrapper"><span class="icon brands fa-instagram"></span></span>
+						<h3>Instagram</h3>
+						<p><a href="https://www.instagram.com/{{ instagram }}">@{{ instagram }}</a></p>
+					</li>
+					{% endif %}
+					{% if visit_addr %}
+					<li>
+						<span class="icon-wrapper"><span class="icon solid fa-building"></span></span>
+						<h3>Address</h3>
+						{{ visit_addr|linebreaks }}
+					</li>
+					{% endif %}
+					<li>
+						<span class="icon-wrapper"><span class="icon solid fa-clock"></span></span>
+						<h3>Hours</h3>
+						<p>
+							MON {{ if visit_hours_MON }}{{ visit_hours_MON }}{{ else }}Closed{{ endif }}<br />
+							TUE {{ if visit_hours_TUE }}{{ visit_hours_TUE }}{{ else }}Closed{{ endif }}<br />
+							WED {{ if visit_hours_WED }}{{ visit_hours_WED }}{{ else }}Closed{{ endif }}<br />
+							THU {{ if visit_hours_THU }}{{ visit_hours_THU }}{{ else }}Closed{{ endif }}<br />
+							FRI {{ if visit_hours_FRI }}{{ visit_hours_FRI }}{{ else }}Closed{{ endif }}<br />
+							SAT {{ if visit_hours_SAT }}{{ visit_hours_SAT }}{{ else }}Closed{{ endif }}<br />
+							SUN {{ if visit_hours_SUN }}{{ visit_hours_SUN }}{{ else }}Closed{{ endif }}<br />
+							<i>{{ if visit_hours_holidays }}{{ visit_hours_holidays }}{{ else }}Holiday hours may differ.{{ endif }}</i>
+						</p>
+					</li>
+				</ul>
+			</section>
+			{% endif %}
+		{% endwith %}
+	</div>
+</section>

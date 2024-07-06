@@ -1,0 +1,34 @@
+{% load wagtailcore_tags navigation_tags %}
+
+<header id="header" class="alt">
+    <h1><a href="{% pageurl site_root %}">CMR &amp; NRHS</a></h1>
+    {% get_site_root as site_root %}
+    <nav id="nav">
+        <ul>
+            <li><a href="{% pageurl site_root %}">{% if site_root.title %}{{ site_root.title }}{% else %}Home{% endif %}</a></li>
+            {% for menuitem in site_root.get_children.live.in_menu %}
+            <li><a href="{% pageurl menuitem %}">{{ menuitem.title }}</a></li>
+            {% endfor %}
+            <!-- DEBUG & TESTING -->
+            <li>
+                <a href="#" class="submenu fa-angle-down">Dropdown Test</a>
+                <ul>
+                    <li><a href="#">L1 - AAA</a></li>
+                    <li><a href="#">L1 - BBB</a></li>
+                    <li><a href="#">L1 - CCC</a></li>
+                    <li>
+                        <a href="#">Submenu</a>
+                        <ul>
+                            <li><a href="#">L2 - AAA</a></li>
+                            <li><a href="#">L2 - BBB</a></li>
+                            <li><a href="#">L2 - CCC</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li><a href="elements.html">Elements</a></li>
+            <!-- END DEBUG & TESTING -->
+            <li><a href="#" class="button">Sign In</a></li>
+        </ul>
+    </nav>
+</header>
