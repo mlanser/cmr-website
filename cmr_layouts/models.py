@@ -2,8 +2,10 @@ import uuid
 
 from django.db import models
 
-from members.models import Member
 from roadnames.models import RoadName
+
+# from members.models import Member
+
 
 SCALES = [
     ('Z', 'Z Scale'),
@@ -28,7 +30,7 @@ class Locomotive(models.Model):
     modelName = models.CharField(max_length=100)
     roadName = models.ForeignKey(RoadName, on_delete=models.SET_NULL, blank=True, null=True)
     roadNumber = models.CharField(max_length=12, blank=True)
-    member = models.ForeignKey(Member, on_delete=models.SET_NULL, blank=True, null=True)
+    # member = models.ForeignKey(Member, on_delete=models.SET_NULL, blank=True, null=True)
     dccID = models.IntegerField(blank=True)
     manufacturer = models.CharField(max_length=100, blank=True)
     scale = models.CharField(max_length=5, choices=SCALES, default='HO')
@@ -47,7 +49,7 @@ class RollingStock(models.Model):
     modelName = models.CharField(max_length=100)
     roadName = models.ForeignKey(RoadName, on_delete=models.SET_NULL, blank=True, null=True)
     roadNumber = models.CharField(max_length=12, blank=True)
-    member = models.ForeignKey(Member, on_delete=models.SET_NULL, blank=True, null=True)
+    # member = models.ForeignKey(Member, on_delete=models.SET_NULL, blank=True, null=True)
     manufacturer = models.CharField(max_length=100, blank=True)
     scale = models.CharField(max_length=5, choices=SCALES, default='HO')
     image = models.ImageField(upload_to='roster/', blank=True)
