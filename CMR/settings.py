@@ -17,6 +17,7 @@ from pathlib import Path
 import environ
 
 SITE_ID = 1
+SITE_OWNER = 'Carolina Model Railroaders'
 
 # Set up `env` object
 env = environ.Env(DEBUG=(bool, False))  # Set casting and default value
@@ -25,7 +26,6 @@ env = environ.Env(DEBUG=(bool, False))  # Set casting and default value
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECT_DIR = Path(__file__).resolve().parent
-# PROJECT_DIR = Path(__file__).absolute().parent
 
 # Read environment variables from `.env` file
 try:
@@ -92,8 +92,6 @@ DATABASES = {
 # }
 
 
-CMS_CONFIRM_VERSION4 = True  # Required by `django-cms`
-
 ALLOWED_HOSTS = []
 
 # 'allauth' settings
@@ -120,6 +118,8 @@ INSTALLED_APPS = [
     'accounts',
     'rest_framework',
     'corsheaders',
+    'compressor',
+    'phonenumber_field',
     # -- 'allauth' apps ---------------
     'allauth',
     'allauth.account',
@@ -128,6 +128,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.openid',
     # -- 'wagtail' apps ------------
+    'wagtail',
     'wagtail.embeds',
     'wagtail.sites',
     'wagtail.users',
@@ -147,22 +148,19 @@ INSTALLED_APPS = [
     'wagtail.contrib.settings',
     'wagtail.contrib.simple_translation',
     'wagtail.contrib.styleguide',
-    'wagtail',
     'taggit',
     'modelcluster',
-    # 'wagtailfontawesomesvg',
-    # ---------------------------------
-    'blog',
+    'wagtailmarkdown',
+    # -- CMR Website-specific apps ----
+    'base',
     # 'events',
     'home',
+    'section_main',
+    'section_pages',
     # 'locations',
     # 'roadnames',
-    # 'cmr_layouts',
-    # 'cmr_pages',
-    # 'cmr_projects',
-    # 'nrhs_pages',
-    # 'nrhs_projects',
 ]
+
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 MIDDLEWARE = [
@@ -193,7 +191,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'wagtail.contrib.settings.context_processors.settings',
+                'wagtail.contrib.settings.context_processors.settings',  # Required by `wagtail`
             ],
         },
     },
@@ -242,11 +240,14 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+PHONE_NUMBER_DEFAULT_REGION = 'US'  # Required by `phonenumber_field`
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'compressor.finders.CompressorFinder',
 ]
 
 STATICFILES_DIRS = [
@@ -257,7 +258,11 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# MEDIA_ROOT = BASE_DIR / 'media'
+
+COMPRESS_ROOT = (
+    BASE_DIR / 'static'
+)  # Required by `django-compressor` and can be diff folder than STATIC_ROOT
 
 WAGTAILADMIN_BASE_URL = '/admin/'
 
@@ -369,6 +374,23 @@ WAGTAILDOCS_EXTENSIONS = [
     'xlsx',
     'zip',
 ]
+
+# settings.py
+
+WAGTAILMARKDOWN = {
+    'autodownload_fontawesome': False,
+    'allowed_tags': ['br'],  # optional. a list of HTML tags. e.g. ['div', 'p', 'a']
+    'allowed_styles': [],  # optional. a list of styles
+    'allowed_attributes': {},  # optional. a dict with HTML tag as key and a list of attributes as value
+    'allowed_settings_mode': 'extend',  # optional. Possible values: 'extend' or 'override'. Defaults to 'extend'.
+    'extensions': [
+        'toc',
+        'sane_lists',
+    ],  # optional. a list of python-markdown supported extensions
+    'extension_configs': {},  # optional. a dictionary with the extension name as key, and its configuration as value
+    'extensions_settings_mode': 'extend',  # optional. Possible values: 'extend' or 'override'. Defaults to 'extend'.
+    'tab_length': 4,  # optional. Sets the length of tabs used by python-markdown to render the output. This is the number of spaces used to replace with a tab character. Defaults to 4.
+}
 
 # ADMIN_PASSWORD = env('ADMIN_PASSWORD', 'changeme')
 
