@@ -131,6 +131,34 @@ class ContactSettings(BaseGenericSetting):
 
 
 @register_snippet
+class CopyrightText(
+    DraftStateMixin,
+    RevisionMixin,
+    PreviewableMixin,
+    TranslatableMixin,
+    models.Model,
+):
+    body = RichTextField()
+
+    panels = [
+        FieldPanel('body'),
+        PublishingPanel(),
+    ]
+
+    def __str__(self):
+        return 'Copyright text'
+
+    def get_preview_template(self, request, mode_name):
+        return 'base.html'
+
+    def get_preview_context(self, request, mode_name):
+        return {'copyright_text': self.body}
+
+    class Meta(TranslatableMixin.Meta):
+        verbose_name_plural = 'Copyright Text'
+
+
+@register_snippet
 class FooterText(
     DraftStateMixin,
     RevisionMixin,

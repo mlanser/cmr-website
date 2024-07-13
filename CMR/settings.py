@@ -192,6 +192,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'wagtail.contrib.settings.context_processors.settings',  # Required by `wagtail`
+                'base.processor.debug_context' if DEBUG else None,  # Custom context processor
             ],
         },
     },

@@ -1,4 +1,4 @@
-from wagtail.blocks import CharBlock, ChoiceBlock, RichTextBlock, StreamBlock, StructBlock
+from wagtail.blocks import CharBlock, ChoiceBlock, StreamBlock, StructBlock
 from wagtail.embeds.blocks import EmbedBlock
 from wagtail.images.blocks import ImageChooserBlock
 from wagtailmarkdown.blocks import MarkdownBlock
@@ -34,7 +34,7 @@ class HeadingBlock(StructBlock):
 
 class BaseStreamBlock(StreamBlock):
     heading_block = HeadingBlock()
-    richtext_block = RichTextBlock(icon='pilcrow')
+    # richtext_block = RichTextBlock(icon='pilcrow')
     markdown_block = MarkdownBlock(icon='code')
     image_block = ImageBlock()
     embed_block = EmbedBlock(

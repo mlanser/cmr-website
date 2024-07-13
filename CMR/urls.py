@@ -26,13 +26,14 @@ from wagtail.contrib.sitemaps.views import sitemap
 from wagtail.documents import urls as wagtaildocs_urls
 from wagtail.images.views.serve import ServeView
 
-from home import views as home_views
 
 # from search import views as search_views
 
 urlpatterns = [
-    path('django-admin/', admin.site.urls),
-    path('admin/', include(wagtailadmin_urls)),
+    # path('django-admin/', admin.site.urls),
+    # path('admin/', include(wagtailadmin_urls)),
+    path('admin/', admin.site.urls),
+    path('cms/', include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
     re_path(
         r'^images/([^/]*)/(\d*)/([^/]*)/[^/]*$',
@@ -67,7 +68,27 @@ if settings.DEBUG:
             RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico'),
             name='favicon',
         ),
-        path('test/', home_views.test, name='test'),  # For testing templates
+        # Optional URL for including your own vanilla Django urls/views
+        re_path(
+            'theme-sctn-main/',
+            TemplateView.as_view(template_name='debug/theme-sctn-main.html'),
+            name='theme_sctn_main',
+        ),
+        re_path(
+            'theme-sctn-page/',
+            TemplateView.as_view(template_name='debug/theme-sctn-page.html'),
+            name='theme_sctn_page',
+        ),
+        re_path(
+            'theme-elements/',
+            TemplateView.as_view(template_name='debug/theme-elements.html'),
+            name='theme_elements',
+        ),
+        re_path(
+            'theme-home/',
+            TemplateView.as_view(template_name='debug/theme-home.html'),
+            name='theme_home',
+        ),
     ]
 
     # Required by `django-debug-toolbar`

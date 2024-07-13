@@ -1,0 +1,42 @@
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% if page.slides and False %}
+<section id="banner">
+	{% for slide in page.slides %}
+	<article>
+		<img src="{% image slide.image %}" alt="" />
+		{% if slide.text %}
+		<div class="inner">
+			<h2><a href="#">{{ slide.text }}</a></h2>
+		</div>
+		{% endif %}
+	</article>
+	{% endfor %}
+</section>
+{% endif %}
+<section id="banner">
+	<article>
+		<img src="{% static 'images/blank-1920x1080.jpg' %}" alt="" />
+		<div class="inner">
+			<h2><a href="#">SLIDE 1</a></h2>
+		</div>
+	</article>
+	<article>
+		<img src="{% static 'images/blank-1920x1080.jpg' %}" alt="" />
+		<div class="inner">
+			<h2><a href="#">SLIDE 2</a></h2>
+		</div>
+	</article>
+	<article>
+		<img src="{% static 'images/blank-1920x1080.jpg' %}" alt="" />
+		<div class="inner">
+			<h2><a href="#">SLIDE 3</a></h2>
+		</div>
+	</article>
+	<article>
+		<img src="{% static 'images/blank-1920x1080.jpg' %}" alt="" />
+		<div class="inner">
+			<h2><a href="#">SLIDE 4</a></h2>
+		</div>
+	</article>
+</section>

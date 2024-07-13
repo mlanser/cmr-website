@@ -1,7 +1,7 @@
 {% load wagtailcore_tags navigation_tags %}
 
-<header id="header" class="alt">
-    <h1><a href="{% pageurl site_root %}">CMR &amp; NRHS</a></h1>
+<header id="header" {% if page.isHome %}class="reveal alt"{% endif %}>
+    <h1><a href="{% if site_root %}{% pageurl site_root %}{% else %}/{% endif %}">CMR &amp; NRHS</a></h1>
     {% get_site_root as site_root %}
     <nav id="nav">
         <ul>
@@ -9,12 +9,13 @@
             {% for menuitem in site_root.get_children.live.in_menu %}
             <li><a href="{% pageurl menuitem %}">{{ menuitem.title }}</a></li>
             {% endfor %}
-            <!-- DEBUG & TESTING -->
+
+            {% if DEBUG %}
             <li>
                 <a href="#" class="submenu fa-angle-down">Dropdown Test</a>
                 <ul>
-                    <li><a href="#">L1 - AAA</a></li>
-                    <li><a href="#">L1 - BBB</a></li>
+                    <li><a href="{% url 'theme_home' %}">Theme Home</a></li>
+                    <li><a href="{% url 'theme_elements' %}">Theme Elements</a></li>
                     <li><a href="#">L1 - CCC</a></li>
                     <li>
                         <a href="#">Submenu</a>
@@ -26,9 +27,13 @@
                     </li>
                 </ul>
             </li>
-            <li><a href="elements.html">Elements</a></li>
-            <!-- END DEBUG & TESTING -->
+            {% endif %}
+
+            {% if user.is_authenticated %}
+            <li><a href="#" class="button">Sign Out</a></li>
+            {% else %}
             <li><a href="#" class="button">Sign In</a></li>
+            {% endif %}
         </ul>
     </nav>
 </header>

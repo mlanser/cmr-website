@@ -14,7 +14,7 @@ def import_fontawesome_stylesheet():
 
 
 # -----------------------------------------------------
-# TODO: REview after installing `django-compressor` app
+# TODO: Review after installing `django-compressor` app
 # -----------------------------------------------------
 # @hooks.register("insert_global_admin_css")
 # def import_fontawesome_stylesheet():
