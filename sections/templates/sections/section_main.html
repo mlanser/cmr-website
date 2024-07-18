@@ -1,0 +1,42 @@
+{% extends "base/main.html" %}
+
+{% load wagtailcore_tags wagtailimages_tags %}
+{% block body_class %}template-section-main{% endblock %}
+
+{% block content %}
+<section id="main" class="wrapper sidebar right">
+    <div class="inner">
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Happening - Events, Shows, Calendar -->
+            {% if page.show_happening %}
+            <section id="two" class="wrapper content-pad">
+                <div class="inner">
+                    <div class="features two">
+                        {% include "includes/event-tiles.html" %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Recent Content -->
+            {% if page.show_recent %}
+            <section id="three" class="wrapper style2">
+                <div class="inner">
+                    <h2>{% if header_recent %}{{ header_recent }}{% else %}Recent Posts{% endif %}</h2>
+                    <div class="posts">
+                        {% include "includes/recent.html" %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+        </div>
+
+    <!-- Sidebar -->
+    {% include "includes/sidebar.html" %}
+
+    </div>
+</section>
+
+{% endblock %}

@@ -1,42 +1,36 @@
 {% load static wagtailcore_tags wagtailimages_tags %}
 
-{% if page.slides and False %}
 <section id="banner">
-	{% for slide in page.slides %}
+{# Show slides if one or more are defined #}
+{% for slide in slides %}
 	<article>
-		<img src="{% image slide.image %}" alt="" />
+		<img src="{% image slide.image max-1920x1080 %}" alt="" />
 		{% if slide.text %}
 		<div class="inner">
-			<h2><a href="#">{{ slide.text }}</a></h2>
+			<h2><a href="#">{{ slide.text|richtext }}</a></h2>
 		</div>
 		{% endif %}
 	</article>
-	{% endfor %}
-</section>
-{% endif %}
-<section id="banner">
+{% empty %}
+	{% if DEBUG %}
+	{# Show default content if no slide is defined #}
 	<article>
-		<img src="{% static 'images/blank-1920x1080.jpg' %}" alt="" />
+		<img src="{% static 'images/default-slide-cmr-1920x1080-min.jpg' %}" alt="" />
 		<div class="inner">
-			<h2><a href="#">SLIDE 1</a></h2>
+			<h2><a href="#">Carolina Model Railroaders</a></h2>
 		</div>
 	</article>
 	<article>
-		<img src="{% static 'images/blank-1920x1080.jpg' %}" alt="" />
+		<img src="{% static 'images/default-slide-nrhs-1920x1080-min.jpg' %}" alt="" />
 		<div class="inner">
-			<h2><a href="#">SLIDE 2</a></h2>
+			<h2><a href="#">National Railroad Historical Society</a></h2>
 		</div>
 	</article>
-	<article>
-		<img src="{% static 'images/blank-1920x1080.jpg' %}" alt="" />
-		<div class="inner">
-			<h2><a href="#">SLIDE 3</a></h2>
-		</div>
-	</article>
-	<article>
-		<img src="{% static 'images/blank-1920x1080.jpg' %}" alt="" />
-		<div class="inner">
-			<h2><a href="#">SLIDE 4</a></h2>
-		</div>
-	</article>
+	{% else %}
+	<!-- img src="{% static 'images/default-slide-nrhs-1920x1080-min.jpg' %}" alt="" / -->
+	<div class="inner">
+		<p>There are no recent posts.</p>
+	</div>
+	{% endif %}
+{% endfor %}
 </section>

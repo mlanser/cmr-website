@@ -1,0 +1,3 @@
+home/migrations/0001_*.py
+home/migrations/0002_*.py
+*/orig.migrations/*

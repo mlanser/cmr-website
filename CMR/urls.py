@@ -20,18 +20,16 @@ import debug_toolbar
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path, re_path
+
 from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.contrib.sitemaps.views import sitemap
 from wagtail.documents import urls as wagtaildocs_urls
 from wagtail.images.views.serve import ServeView
-
-
 # from search import views as search_views
 
+
 urlpatterns = [
-    # path('django-admin/', admin.site.urls),
-    # path('admin/', include(wagtailadmin_urls)),
     path('admin/', admin.site.urls),
     path('cms/', include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
@@ -45,7 +43,6 @@ urlpatterns = [
     # path("api/v2/", api_router.urls),
     # Optional URL for including your own vanilla Django urls/views
     # re_path('my_app', include('my_app.urls')),
-    # re_path('layouts/', include('cmr_layouts.urls')),
     # re_path('members/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),  # Required by `allauth`
 ]
@@ -68,7 +65,7 @@ if settings.DEBUG:
             RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico'),
             name='favicon',
         ),
-        # Optional URL for including your own vanilla Django urls/views
+        # Test templates to check theme elements, etc.
         re_path(
             'theme-sctn-main/',
             TemplateView.as_view(template_name='debug/theme-sctn-main.html'),

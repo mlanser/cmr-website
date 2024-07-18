@@ -1,0 +1,23 @@
+{% extends "base/main.html" %}
+
+{% load wagtailcore_tags wagtailimages_tags %}
+{% block body_class %}template-standard-page{% endblock %}
+
+{% block content %}
+<section id="main" class="wrapper">
+    <div class="inner">
+
+        <!-- Content Header -->
+        <header class="major">
+            <h2>{{ page.title }}</h2>
+            <p>{{ page.intro }}</p>
+        </header>
+
+        <!-- Content -->
+        <div class="content">
+            {{ page.body|markdown|safe }}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

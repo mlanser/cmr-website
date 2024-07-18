@@ -153,10 +153,9 @@ INSTALLED_APPS = [
     'wagtailmarkdown',
     # -- CMR Website-specific apps ----
     'base',
-    # 'events',
     'home',
-    'section_main',
-    'section_pages',
+    # 'events',
+    'sections',
     # 'locations',
     # 'roadnames',
 ]

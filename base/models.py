@@ -1,10 +1,35 @@
 from django.db import models
+
+from modelcluster.fields import ParentalKey
 from phonenumber_field.modelfields import PhoneNumberField
-from wagtail.admin.panels import FieldPanel, MultiFieldPanel, PublishingPanel
+
+from wagtail.admin.panels import (
+    FieldPanel,
+    FieldRowPanel,
+    InlinePanel,
+    MultiFieldPanel,
+    PageChooserPanel,
+    PublishingPanel,
+)
+
+from wagtail.fields import RichTextField, StreamField
+from wagtail.models import (
+    Page,
+    DraftStateMixin,
+    PreviewableMixin,
+    RevisionMixin,
+    TranslatableMixin,
+)
+
+from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
+from wagtail.contrib.forms.panels import FormSubmissionsPanel
+
 from wagtail.contrib.settings.models import BaseGenericSetting, register_setting
-from wagtail.fields import RichTextField
-from wagtail.models import DraftStateMixin, PreviewableMixin, RevisionMixin, TranslatableMixin
+
 from wagtail.snippets.models import register_snippet
+from wagtail.search import index
+
+from sections.blocks import SectionPageStreamBlock
 
 
 @register_setting
@@ -39,60 +64,62 @@ class ContactSettings(BaseGenericSetting):
         max_length=30,
         blank=True,
     )
-    visit_addr = RichTextField(
+    visit_addr = models.TextField(
         help_text='Visiting address for CMR layout and NRHS exhibits.',
         verbose_name='Visiting Address',
         blank=True,
     )
-    visit_hours_MON = models.CharField(
+    open_MON = models.CharField(
+        default='',
         help_text='Visiting hours on Modays. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='MON',
         max_length=10,
         blank=True,
     )
-    visit_hours_MON = models.CharField(
-        help_text='Visiting hours on Monday. Leave blank if not open to public. Example: 10A - 5P.',
-        verbose_name='MON',
-        max_length=10,
-        blank=True,
-    )
-    visit_hours_TUE = models.CharField(
+    open_TUE = models.CharField(
+        default='',
         help_text='Visiting hours on Tuesday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='TUE',
         max_length=10,
         blank=True,
     )
-    visit_hours_WED = models.CharField(
+    open_WED = models.CharField(
+        default='',
         help_text='Visiting hours on Wednesday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='WED',
         max_length=10,
         blank=True,
     )
-    visit_hours_THU = models.CharField(
+    open_THU = models.CharField(
+        default='7P - 9P',
         help_text='Visiting hours on Thursday.Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='THU',
         max_length=10,
         blank=True,
     )
-    visit_hours_FRI = models.CharField(
+    open_FRI = models.CharField(
+        default='',
         help_text='Visiting hours on Friday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='FRI',
         max_length=10,
         blank=True,
     )
-    visit_hours_SAT = models.CharField(
+    open_SAT = models.CharField(
+        default='10A - 5P',
         help_text='Visiting hours on Saturday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='SAT',
         max_length=10,
         blank=True,
     )
-    visit_hours_SUN = models.CharField(
+    open_SUN = models.CharField(
+        default='2P - 5P',
         help_text='Visiting hours on Sunday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='SUN',
         max_length=10,
         blank=True,
     )
-    visit_hours_holidays = models.CharField(
+    open_holidays = models.CharField(
+        default='Holiday hours may differ.',
         help_text="Exceptions for holidays. Example: 'Holiday hours may differ.'",
         verbose_name='Holidays',
         max_length=30,
@@ -116,14 +143,14 @@ class ContactSettings(BaseGenericSetting):
         ),
         MultiFieldPanel(
             [
-                FieldPanel('visit_hours_MON'),
-                FieldPanel('visit_hours_TUE'),
-                FieldPanel('visit_hours_WED'),
-                FieldPanel('visit_hours_THU'),
-                FieldPanel('visit_hours_FRI'),
-                FieldPanel('visit_hours_SAT'),
-                FieldPanel('visit_hours_SUN'),
-                FieldPanel('visit_hours_holidays'),
+                FieldPanel('open_MON'),
+                FieldPanel('open_TUE'),
+                FieldPanel('open_WED'),
+                FieldPanel('open_THU'),
+                FieldPanel('open_FRI'),
+                FieldPanel('open_SAT'),
+                FieldPanel('open_SUN'),
+                FieldPanel('open_holidays'),
             ],
             'Visiting Hours',
         ),
@@ -138,7 +165,9 @@ class CopyrightText(
     TranslatableMixin,
     models.Model,
 ):
-    body = RichTextField()
+    body = models.TextField(
+        help_text='Copyright text to display in the footer.',
+    )
 
     panels = [
         FieldPanel('body'),
@@ -203,3 +232,133 @@ class Author(models.Model):
 
     class Meta:
         verbose_name_plural = 'Authors'
+
+
+class ContactField(AbstractFormField):
+    page = ParentalKey('ContactForm', on_delete=models.CASCADE, related_name='contact_fields')
+
+
+class ContactForm(AbstractEmailForm):
+    intro = RichTextField(blank=True)
+    thank_you_text = RichTextField(blank=True)
+
+    content_panels = AbstractEmailForm.content_panels + [
+        FormSubmissionsPanel(),
+        FieldPanel('intro'),
+        InlinePanel('contact_fields', label='Contact Form fields'),
+        FieldPanel('thank_you_text'),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel('from_address'),
+                        FieldPanel('to_address'),
+                    ]
+                ),
+                FieldPanel('subject'),
+            ],
+            'Email',
+        ),
+    ]
+
+
+# Plain standard page without banner or header sections
+#
+# NOTE: This is a simple page with a basic fields (e.g. title,
+#       body, etc.) and it's best used for pages sugas T&C, etc.
+class StandardPage(Page):
+    # Database fields
+    intro = models.CharField(max_length=250)
+    body = StreamField(
+        SectionPageStreamBlock(),
+        blank=True,
+        use_json_field=True,
+        help_text='Create a plain page without sidebar using Markdown.',
+    )
+
+    # Search index configuration
+    search_fields = Page.search_fields + [
+        index.SearchField('body'),
+        index.SearchField('intro'),
+    ]
+
+    # Editor panels configuration
+    content_panels = Page.content_panels + [
+        FieldPanel('intro'),
+        FieldPanel('body'),
+    ]
+
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
+    ]
+
+    # Parent page / subpage type rules
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+
+    # Misc fields, helpers, and custom methods
+    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+
+        # Add extra variables and return updated context
+        context['DEBUG'] = 'DEBUG'  # Placeholder for custom context variables
+        return context
+
+
+# Abstract model for banner slide
+class BannerSlide(models.Model):
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Slide image',
+        help_text='Image for the slide',
+    )
+    text = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Slide text',
+        help_text='Text to display on the slide',
+    )
+    url = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Slide link',
+        help_text='Optional link for the slide',
+    )
+
+    panels = [
+        FieldPanel('image'),
+        FieldPanel('text'),
+        FieldPanel('url'),
+    ]
+
+    class Meta:
+        abstract = True
+
+
+# Abstract model for event tile
+class EventItem(models.Model):
+    event_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Promoted event',
+        help_text='Select event content to promote on home page',
+    )
+
+    panels = [
+        PageChooserPanel('event_page', 'sections.SectionPage'),
+    ]
+
+    class Meta:
+        abstract = True

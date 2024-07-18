@@ -1,222 +1,181 @@
+# ... (existing code)
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+from modelcluster.fields import ParentalKey
+
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel, PageChooserPanel
+
+from wagtail.models import Page, Orderable
 
 
-from wagtail.admin.panels import FieldPanel, MultiFieldPanel
-from wagtail.models import Page
+from base.models import BannerSlide, EventItem
 
 
+# -------------------------------------
+#         C O R E   M O D E L S
+# -------------------------------------
 class HomePage(Page):
+    # --------------------------------
     # Database fields
     # --------------------------------
-    # Banner Section -- Max 4 slides
-    slide01 = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        help_text='Image for slide #1',
+    # Show banner section?
+    show_banner = models.BooleanField(
+        default=False,
+        verbose_name='Show banner',
+        help_text='Show banner on home page?',
     )
-    slide01_text = models.CharField(
-        blank=True,
-        verbose_name='Text for slide #1',
-        max_length=255,
-        help_text='Text to display on slide #1',
+
+    # Show promoted content on home page?
+    show_promo = models.BooleanField(
+        default=False,
+        verbose_name='Show promoted',
+        help_text='Show promoted content on home page?',
     )
-    slide01_link = models.ForeignKey(
+    promoted_page = models.ForeignKey(
         'wagtailcore.Page',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name='+',
-        verbose_name='CTA link for slide #1',
-        help_text='Optional link for slide #1',
+        verbose_name='Promoted content',
+        help_text='Select content to promote on home page',
     )
 
-    slide02 = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        help_text='Image for slide #2',
+    # Show events and newsletter sign-up on home page?
+    show_happening = models.BooleanField(
+        default=False,
+        verbose_name='Show events',
+        help_text='Show upcoming events, shows, etc. on home page?',
     )
-    slide02_text = models.CharField(
-        blank=True,
-        verbose_name='Text for slide #2',
-        max_length=255,
-        help_text='Text to display on slide #2',
-    )
-    slide02_link = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='CTA link for slide #2',
-        help_text='Optional link for slide #2',
+    show_newsletter = models.BooleanField(
+        default=False,
+        verbose_name='Show newsletter',
+        help_text='Show newsletter sign-up on home page?',
     )
 
-    slide03 = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        help_text='Image for slide #3',
+    # Show recent content on home page?
+    show_recent = models.BooleanField(
+        default=False,
+        verbose_name='Show recent',
+        help_text='Show recent content on home page?',
     )
-    slide03_text = models.CharField(
-        blank=True,
-        verbose_name='Text for slide #3',
-        max_length=255,
-        help_text='Text to display on slide #3',
-    )
-    slide03_link = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='CTA link for slide #3',
-        help_text='Optional link for slide #3',
+    # Number of recent items to show on home page
+    max_recent = models.IntegerField(
+        default=6,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(12),
+        ],
+        verbose_name='Max recent',
+        help_text='Maximum number of recent items to show on home page',
     )
 
-    slide04 = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        help_text='Image for slide #4',
-    )
-    slide04_text = models.CharField(
-        blank=True,
-        verbose_name='Text for slide #4',
-        max_length=255,
-        help_text='Text to display on slide #4',
-    )
-    slide04_link = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='CTA link for slide #4',
-        help_text='Optional link for slide #4',
+    # Show contact form and social media section?
+    show_contact_info = models.BooleanField(
+        default=False,
+        verbose_name='Show contact info',
+        help_text='Show content form and social media links on home page?',
     )
 
+    # --------------------------------
     # Editor panels configuration
+    # --------------------------------
     content_panels = Page.content_panels + [
         MultiFieldPanel(
             [
-                FieldPanel('slide01'),
-                FieldPanel('slide01_text'),
-                FieldPanel('slide01_link'),
+                FieldPanel('show_banner'),
+                # PageChooserPanel('promoted_page', 'sections.SectionPage'),
             ],
-            heading='Banner Slide #1',
+            heading='Home page banner slides',
         ),
         MultiFieldPanel(
             [
-                FieldPanel('slide02'),
-                FieldPanel('slide02_text'),
-                FieldPanel('slide02_link'),
+                FieldPanel('show_promo'),
+                PageChooserPanel('promoted_page', 'sections.SectionPage'),
             ],
-            heading='Banner Slide #2',
+            heading='Home page promoted content',
         ),
         MultiFieldPanel(
             [
-                FieldPanel('slide03'),
-                FieldPanel('slide03_text'),
-                FieldPanel('slide03_link'),
+                FieldPanel('show_happening'),
+                FieldPanel('show_newsletter'),
             ],
-            heading='Banner Slide #3',
+            heading='Home page events',
         ),
         MultiFieldPanel(
             [
-                FieldPanel('slide04'),
-                FieldPanel('slide04_text'),
-                FieldPanel('slide04_link'),
+                FieldPanel('show_recent'),
+                FieldPanel('max_recent'),
             ],
-            heading='Banner Slide #4',
+            heading='Home page recent content',
         ),
-        # FieldPanel('body'),
+        MultiFieldPanel(
+            [
+                FieldPanel('show_contact_info'),
+                # PageChooserPanel('promoted_page', 'sections.SectionPage'),
+            ],
+            heading='Home page contact form, social media links, and visiting address and hours.',
+        ),
     ]
 
+    # promote_panels = []
     promote_panels = [
         MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
     ]
 
-    # Search index configuration
-    # search_fields = Page.search_fields + [
-    #     index.SearchField('body'),
-    # ]
-
+    # --------------------------------
     # Parent page / subpage type rules
-    # subpage_types = ['section_main.SectionMainPage']
+    # --------------------------------
+    # parent_page_types = ['home.HomePage']
+    subpage_types = ['sections.SectionMain', 'base.StandardPage']
 
+    # --------------------------------
     # Misc fields, helpers, and custom methods
+    # --------------------------------
     page_description = 'Use this content type for the home page.'
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
 
         # Add extra variables and return updated context
-        context['showBanner'] = True
-        context['showMeta'] = False
-        context['showContact'] = True
-        context['DEBUG'] = 'DEBUG'  # Placeholder for custom context variables
+        context['is_home'] = True
 
         context['slides'] = []
-        if self.slide01:
-            context['slides'].append(
-                {'image': self.slide01, 'text': self.slide01_text, 'link': self.slide01_link}
-            )
-        if self.slide02:
-            context['slides'].append(
-                {'image': self.slide02, 'text': self.slide02_text, 'link': self.slide02_link}
-            )
-        if self.slide03:
-            context['slides'].append(
-                {'image': self.slide03, 'text': self.slide03_text, 'link': self.slide03_link}
-            )
-        if self.slide04:
-            context['slides'].append(
-                {'image': self.slide04, 'text': self.slide04_text, 'link': self.slide04_link}
-            )
+        # if self.slide01:
+        #     context['slides'].append(
+        #         {'image': self.slide01, 'text': self.slide01_text, 'link': self.slide01_link}
+        #     )
+        # if self.slide02:
+        #     context['slides'].append(
+        #         {'image': self.slide02, 'text': self.slide02_text, 'link': self.slide02_link}
+        #     )
+        # if self.slide03:
+        #     context['slides'].append(
+        #         {'image': self.slide03, 'text': self.slide03_text, 'link': self.slide03_link}
+        #     )
+        # if self.slide04:
+        #     context['slides'].append(
+        #         {'image': self.slide04, 'text': self.slide04_text, 'link': self.slide04_link}
+        #     )
 
         # sectionpages = self.get_children().live().order_by('-first_published_at')
         # context['sectionpages'] = sectionpages
         return context
 
-    # def main_image(self):
-    #     return self.feed_image or None
 
-    # ////////////////////////////////////////
-    # feed_image = models.ForeignKey(
-    #     'wagtailimages.Image',
-    #     null=True,
-    #     blank=True,
-    #     on_delete=models.SET_NULL,
-    #     related_name='+'
-    # )
-    # body = RichTextField(blank=True)
-    # body = StreamField(
-    #     SectionMainStreamBlock(),
-    #     blank=True,
-    #     use_json_field=True,
-    #     help_text='Create a landing/main page for a section using Markdown.',
-    # )
+# -------------------------------------
+#     S U P P O R T   M O D E L S
+# -------------------------------------
+# HomePage Banner model
+class HomePageBanner(Orderable, BannerSlide):
+    slide01 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slide01')
+    slide02 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slide02')
+    slide03 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slide03')
+    slide04 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slide04')
 
-    # # modify your content_panels:
-    # content_panels = Page.content_panels + [
-    #     MultiFieldPanel(
-    #         [
-    #             FieldPanel("image"),
-    #             FieldPanel("hero_text"),
-    #             FieldPanel("hero_cta"),
-    #             FieldPanel("hero_cta_link"),
-    #         ],
-    #         heading="Hero section",
-    #     ),
-    #     FieldPanel('body'),
-    # ]
+
+# HomePage Event model
+class HomePageEvents(Orderable, EventItem):
+    event01 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='event_item01')
+    event02 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='event_item02')

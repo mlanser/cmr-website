@@ -1,0 +1,54 @@
+{% extends "base/main.html" %}
+
+{% load wagtailcore_tags wagtailimages_tags %}
+{% block body_class %}template-section-page{% endblock %}
+
+{% block content %}
+<section id="main" class="wrapper sidebar right">
+    <div class="inner">
+
+        <!-- Content Header -->
+        <header class="major">
+            <h2>{{ page.title }}</h2>
+            {% if show_meta %}
+            <p class="metadata">
+                <span class="icon solid fa-calendar-alt"></span><span class="date">{{ page.date }}</span>
+                {% with tags=page.tags.all %}
+                    {% if tags %}
+                    | <span class="icon solid fa-tags"></span>
+                    {% for tag in tags %}
+                        <a class="tags" href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
+                    {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                {% with authors=page.authors.all %}
+                    {% if authors %}
+                    | <span class="icon solid fa-user"></span>
+                    {% for author in authors %}
+                        <span class="author">{{ author.name }}</span>
+                    {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </p>
+            {% endif %}
+        </header>
+
+        <!-- Content -->
+        <div class="content">
+            {% with page.main_image as main_image %}
+                {% if main_image %}
+                    {% image main_image fill-1080x720 %}<p class="credits"><a href=""#>{{ main_image.credits_text }}</a></p>
+                {% else %}
+                    <a href="#" class="image fit"><img src="{% static 'images/pic07-1080x720.jpg' %}" alt="" /></a>
+                {% endif %}
+            {% endwith %}
+            {{ page.body|markdown|safe }}
+        </div>
+
+        <!-- Sidebar -->
+        {% include "includes/sidebar.html" %}
+
+    </div>
+</section>
+<!-- p><a href="{{ page.get_parent.url }}">Return to {{ page.get_parent.title }}</a></p -->
+{% endblock %}

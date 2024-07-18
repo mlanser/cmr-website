@@ -1963,8 +1963,12 @@ input, select, textarea {
 		position: relative;
 	}
 
-		.features > section {
+		.features > section,
+		.features.three > section {
 			width: calc(33.33333333% - 5em);
+		}
+		.features.two > section {
+			width: calc(50% - 5em);
 		}
 
 			.features > section:before {
@@ -1987,8 +1991,12 @@ input, select, textarea {
 
 		@media screen and (max-width: 1280px) {
 
-			.features > section {
+			.features > section,
+			.features.three > section {
 				width: calc(33.33333333% - 2.5em);
+			}
+			.features.two > section {
+				width: calc(50% - 2.5em);
 			}
 
 				.features > section:before {
@@ -2323,11 +2331,12 @@ input, select, textarea {
 		}
 
 	.icon-wrapper {
-		width: 4em;
+		/* width: 4em; */
+		width: 95%;
 		height: 2em;
 		line-height: 2em;
 		display: inline-block;
-		text-align: center;
+		text-align: left;
 		position: relative;
 		margin: 1.235em 0;
 	}
@@ -2358,11 +2367,20 @@ input, select, textarea {
 
 			.icon-wrapper .icon:before {
 				font-size: 1.5rem;
+				margin-left: .75em;
 			}
 
 		.icon-wrapper.major {
 			display: block;
 			margin: 1.235em 0 3.235em 0;
+		}
+
+		.icon-wrapper.major .icon-label {
+			text-transform: uppercase;
+			font-size: 1em;
+			font-weight: 700;
+			/* margin: 0.5em 0 0 0; */
+			padding: 0 0 0 1.75em;
 		}
 
 		.icon-wrapper.small {
@@ -2926,7 +2944,8 @@ input, select, textarea {
 	}
 
 		.spotlight .content {
-			width: calc(33.3333333% - 1.25em);
+			/* width: calc(33.3333333% - 1.25em); */
+			width: calc(50% - 1.25em);
 		}
 
 		.spotlight h2 {
@@ -2937,7 +2956,8 @@ input, select, textarea {
 		}
 
 		.spotlight .image {
-			width: calc(66.6666666% - 2.5em);
+			/* width: calc(66.6666666% - 2.5em); */
+			width: calc(50% - 2.5em);
 			margin: 0 0 2em 0;
 		}
 
@@ -2952,7 +2972,8 @@ input, select, textarea {
 			}
 
 			.spotlight .image {
-				width: calc(66.6666666% - 1.25em);
+				/* width: calc(66.6666666% - 1.25em); */
+				width: calc(50% - 1.25em);
 			}
 
 		}
@@ -4149,7 +4170,8 @@ input, select, textarea {
 		background-color: #444;
 		color: #fff;
 		min-height: 40em;
-		height: 75vh;
+		/* height: 75vh; */
+		height: 33vh;
 		position: relative;
 	}
 
@@ -4332,7 +4354,8 @@ input, select, textarea {
 
 			#banner {
 				min-height: 35em;
-				height: 60vh;
+				/* height: 60vh; */
+				height: 50vh;
 			}
 
 				#banner > article h2 {
@@ -4345,7 +4368,8 @@ input, select, textarea {
 
 			#banner {
 				min-height: 50em;
-				height: 75vh;
+				/* height: 75vh; */
+				height: 50vh;
 			}
 
 				#banner > article {
