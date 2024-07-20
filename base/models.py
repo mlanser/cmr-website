@@ -362,3 +362,40 @@ class EventItem(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Advert(PreviewableMixin, index.Indexed, models.Model):
+    url = models.URLField(null=True, blank=True)
+    text = models.CharField(max_length=255)
+    image = models.ForeignKey('wagtailimages.Image', on_delete=models.CASCADE, related_name='+')
+
+    panels = [
+        FieldPanel("url"),
+        FieldPanel("text"),
+        FieldPanel('image'),
+    ]
+
+    search_fields = [
+        index.SearchField('text'),
+        index.AutocompleteField('text'),
+    ]
+
+    def __str__(self):
+        return self.text
+
+    @property
+    def preview_modes(self):
+        return PreviewableMixin.DEFAULT_PREVIEW_MODES + [("alt", "Alternate")]
+
+    def get_preview_template(self, request, mode_name):
+        templates = {
+            "": "base/previews/advert.html",  # Default preview mode
+            "alt": "base/previews/advert_alt.html",  # Alternate preview mode
+        }
+        return templates.get(mode_name, templates[""])
+
+    def get_preview_context(self, request, mode_name):
+        context = super().get_preview_context(request, mode_name)
+        if mode_name == "alt":
+            context["extra_context"] = "Alternate preview mode"
+        return context

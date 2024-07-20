@@ -284,7 +284,7 @@ class SectionPage(Page):
         FieldPanel('intro'),
         FieldPanel('body'),
         InlinePanel('gallery_images', label='Gallery images'),
-        InlinePanel('related_links', label='Relaterd links'),
+        InlinePanel('related_links', label='Related links'),
     ]
 
     promote_panels = [
