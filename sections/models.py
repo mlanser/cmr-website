@@ -8,7 +8,7 @@ from taggit.models import TaggedItemBase
 
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel, PageChooserPanel
 
-from wagtail.fields import StreamField
+from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
 
 
@@ -157,29 +157,31 @@ class SectionMainEvents(Orderable, EventItem):
 
 
 class SectionPageTag(TaggedItemBase):
-    page = ParentalKey('SectionPage', on_delete=models.CASCADE, related_name='tagged_items')
+    content_object = ParentalKey(
+        'SectionPage', on_delete=models.CASCADE, related_name='tagged_items'
+    )
 
 
-# Section Page model
+# Section Page model - Markdown Format
 #
-# NOTE: The section page is the main page type used for content (e.g. events,
-#       shows, projects, exhibits, blog posts, etc.) in all sections.
-class SectionPage(Page):
+# The section page is the main page type used for content (e.g. events,
+# shows, projects, exhibits, blog posts, etc.) in all sections.
+#
+# NOTE: This version is designed for content using Markdown format.
+#
+class SectionMDPage(Page):
     # --------------------------------
     # Database fields
     # --------------------------------
     date = models.DateField('Post date')
     authors = ParentalManyToManyField('base.Author', blank=True)
     tags = ClusterTaggableManager(through=SectionPageTag, blank=True)
-    feed_image = models.ForeignKey(
-        'wagtailimages.Image', null=True, blank=True, on_delete=models.SET_NULL, related_name='+'
-    )
     intro = models.CharField(max_length=250)
     body = StreamField(
         SectionPageStreamBlock(),
         blank=True,
         use_json_field=True,
-        help_text='Create a landing/main page for a section using Markdown.',
+        help_text='Content for section page using Markdown format.',
     )
 
     # --------------------------------
@@ -205,7 +207,6 @@ class SectionPage(Page):
         ),
         FieldPanel('intro'),
         FieldPanel('body'),
-        FieldPanel('feed_image'),
         InlinePanel('gallery_images', label='Gallery images'),
         InlinePanel('related_links', label='Relaterd links'),
     ]
@@ -230,20 +231,109 @@ class SectionPage(Page):
 
         # Add extra variables and return updated context
         context['show_meta'] = True
-        context['DEBUG'] = 'DEBUG'  # Placeholder for custom context variables
         return context
 
     def main_image(self):
-        if self.feed_image:
-            return self.feed_image
-        elif gallery_item := self.gallery_images.first():
+        if gallery_item := self.gallery_images.first():
             return gallery_item.image
+        else:
+            return None
+
+
+# Section Page model - RichText Format
+#
+# The section page is the main page type used for content (e.g. events,
+# shows, projects, exhibits, blog posts, etc.) in all sections.
+#
+# NOTE: This version is designed for content using RichText format.
+#
+class SectionPage(Page):
+    # --------------------------------
+    # Database fields
+    # --------------------------------
+    date = models.DateField('Post date')
+    authors = ParentalManyToManyField('base.Author', blank=True)
+    tags = ClusterTaggableManager(through=SectionPageTag, blank=True)
+    intro = models.CharField(max_length=250)
+    body = RichTextField(
+        blank=True,
+        help_text='Content for section page using RichText format.',
+    )
+
+    # --------------------------------
+    # Search index configuration
+    # --------------------------------
+    search_fields = Page.search_fields + [
+        index.SearchField('body'),
+        index.SearchField('intro'),
+        index.FilterField('date'),
+    ]
+
+    # --------------------------------
+    # Editor panels configuration
+    # --------------------------------
+    content_panels = Page.content_panels + [
+        MultiFieldPanel(
+            [
+                FieldPanel('date'),
+                FieldPanel('authors', widget=forms.CheckboxSelectMultiple),
+                FieldPanel('tags'),
+            ],
+            heading='Section information',
+        ),
+        FieldPanel('intro'),
+        FieldPanel('body'),
+        InlinePanel('gallery_images', label='Gallery images'),
+        InlinePanel('related_links', label='Relaterd links'),
+    ]
+
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
+    ]
+
+    # --------------------------------
+    # Parent page / subpage type rules
+    # --------------------------------
+    parent_page_types = ['sections.SectionMain']
+    subpage_types = []
+
+    # --------------------------------
+    # Misc fields, helpers, and custom methods
+    # --------------------------------
+    page_description = 'Use this content type for common page content.'
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+
+        # Add extra variables and return updated context
+        context['show_meta'] = True
+        return context
+
+    def main_image(self):
+        if gallery_item := self.gallery_images.first():
+            return {
+                'image': gallery_item.image,
+                'caption': gallery_item.caption,
+                'credit_text': gallery_item.credit_text,
+                'credit_url': gallery_item.credit_url,
+            }
         else:
             return None
 
 
 class SectionPageRelatedLink(Orderable):
     page = ParentalKey(SectionPage, on_delete=models.CASCADE, related_name='related_links')
+    name = models.CharField(max_length=250)
+    url = models.URLField()
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('url'),
+    ]
+
+
+class SectionMDPageRelatedLink(Orderable):
+    page = ParentalKey(SectionMDPage, on_delete=models.CASCADE, related_name='related_links')
     name = models.CharField(max_length=250)
     url = models.URLField()
 
@@ -262,7 +352,22 @@ class SectionPageGalleryImage(Orderable):
 
     panels = [
         FieldPanel('image'),
-        FieldPanel('caption'),
+        FieldPanel('caption'),  # ALT text
+        FieldPanel('credit_text'),
+        FieldPanel('credit_url'),
+    ]
+
+
+class SectionMDPageGalleryImage(Orderable):
+    page = ParentalKey(SectionMDPage, on_delete=models.CASCADE, related_name='gallery_images')
+    image = models.ForeignKey('wagtailimages.Image', on_delete=models.CASCADE, related_name='+')
+    caption = models.CharField(blank=True, max_length=250)
+    credit_text = models.CharField(blank=True, max_length=250)
+    credit_url = models.URLField(blank=True)
+
+    panels = [
+        FieldPanel('image'),
+        FieldPanel('caption'),  # ALT text
         FieldPanel('credit_text'),
         FieldPanel('credit_url'),
     ]
@@ -279,7 +384,9 @@ class SectionTagIndexPage(Page):
     def get_context(self, request):
         # Filter by tag
         tag = request.GET.get('tag')
-        sectionpages = SectionPage.objects.filter(tags__name=tag)
+        sectionpages = SectionPage.objects.filter(tags__name=tag) + SectionMDPage.objects.filter(
+            tags__name=tag
+        )
 
         # Update template context
         context = super().get_context(request)

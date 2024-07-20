@@ -1,6 +1,6 @@
 {% extends "base/main.html" %}
 
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load static wagtailcore_tags wagtailimages_tags %}
 {% block body_class %}template-section-page{% endblock %}
 
 {% block content %}
@@ -37,12 +37,12 @@
         <div class="content">
             {% with page.main_image as main_image %}
                 {% if main_image %}
-                    {% image main_image fill-1080x720 %}<p class="credits"><a href=""#>{{ main_image.credits_text }}</a></p>
+                    <span class="image fit">{% image main_image.image fill-1080x720 %}</span><p class="credits"><a href="#">{{ main_image.credit_text }}</a></p>
                 {% else %}
-                    <a href="#" class="image fit"><img src="{% static 'images/pic07-1080x720.jpg' %}" alt="" /></a>
+                    <span class="image fit"><img src="{% static 'images/pic07-1080x720.jpg' %}" alt="" /></span>
                 {% endif %}
             {% endwith %}
-            {{ page.body|markdown|safe }}
+            {{ page.body|richtext }}
         </div>
 
         <!-- Sidebar -->

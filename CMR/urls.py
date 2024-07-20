@@ -62,7 +62,7 @@ if settings.DEBUG:
     urlpatterns += [
         path(
             'favicon.ico',
-            RedirectView.as_view(url=settings.STATIC_URL + 'favicon.ico'),
+            RedirectView.as_view(url=settings.STATIC_URL + 'assets/favicon/favicon.ico'),
             name='favicon',
         ),
         # Test templates to check theme elements, etc.

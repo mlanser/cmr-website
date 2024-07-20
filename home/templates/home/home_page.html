@@ -23,7 +23,7 @@
 	{% if page.show_happening %}
 	<section id="two" class="wrapper content-pad">
 		<div class="inner">
-			<div class="features {% if show_newsletter %}three{% else %}two{% endif %}">
+			<div class="features {% if page.show_newsletter %}three{% else %}two{% endif %}">
 				{% include "includes/event-tiles.html" %}
 				{% if page.show_newsletter %}
 				{% include "includes/newsletter-tile.html" %}

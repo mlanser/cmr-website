@@ -2331,8 +2331,7 @@ input, select, textarea {
 		}
 
 	.icon-wrapper {
-		/* width: 4em; */
-		width: 95%;
+		width: 4em;
 		height: 2em;
 		line-height: 2em;
 		display: inline-block;
@@ -2368,6 +2367,7 @@ input, select, textarea {
 			.icon-wrapper .icon:before {
 				font-size: 1.5rem;
 				margin-left: .75em;
+				margin-right: 1.5em;
 			}
 
 		.icon-wrapper.major {
@@ -2376,11 +2376,12 @@ input, select, textarea {
 		}
 
 		.icon-wrapper.major .icon-label {
+			width: 20em;
 			text-transform: uppercase;
 			font-size: 1em;
 			font-weight: 700;
-			/* margin: 0.5em 0 0 0; */
-			padding: 0 0 0 1.75em;
+			margin-left: 0;
+			display: inline-block;
 		}
 
 		.icon-wrapper.small {
