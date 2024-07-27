@@ -5,8 +5,8 @@ from django.core.management.base import BaseCommand
 from django.utils import lorem_ipsum
 from wagtail.rich_text import RichText
 
-# from bakerydemo.base.models import FooterText, HomePage, Person, StandardPage
-# from bakerydemo.blog.models import BlogIndexPage, BlogPage
+# from base.models import FooterText, HomePage, Person, StandardPage
+# from blog.models import BlogIndexPage, BlogPage
 # from bakerydemo.breads.models import (
 #     BreadIngredient,
 #     BreadPage,
