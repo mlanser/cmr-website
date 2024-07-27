@@ -1,0 +1,54 @@
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+<section id="banner">
+	{# Show slides if one or more are defined #}
+	{% for slide in page.banner_slides.all %}
+	<article>
+		<img src="{% image slide.image max-2000x900 %}" alt="{{ slide.text }}" />
+		{% if slide.text %}
+		<div class="inner">
+			<h2>
+				{% if slide.url %}<a href="{{ slide.url }}">{% endif %}
+				{{ firstof slide.text page.title }}
+				{% if slide.url %}</a>{% endif %}
+			</h2>
+		</div>
+		{% endif %}
+	</article>
+	{% empty %}
+		{% if DEBUG %}
+		{# Show default content if no slide is defined #}
+		<article>
+			<img src="{% static 'images/banner01-2000x900.jpg' %}" alt="" />
+			<div class="inner">
+				<h2><a href="#">Testing Title 01</a></h2>
+			</div>
+		</article>
+		<article>
+			<img src="{% static 'images/banner02-2000x900.jpg' %}" alt="" />
+			<div class="inner">
+				<h2><a href="#">Testing Title 02</a></h2>
+			</div>
+		</article>
+		<article>
+			<img src="{% static 'images/banner03-2000x900.jpg' %}" alt="" />
+			<div class="inner">
+				<h2><a href="#">Testing Title 03</a></h2>
+			</div>
+		</article>
+		<article>
+			<img src="{% static 'images/banner04-2000x900.jpg' %}" alt="" />
+			<div class="inner">
+				<h2><a href="#">Testing Title 04</a></h2>
+			</div>
+		</article>
+		{% else %}
+		<article>
+			<img src="{% static 'images/blank-2000x900.jpg' %}" alt="" />
+			<div class="inner">
+				<h2>{{ page.title }}</h2>
+			</div>
+		</article>
+		{% endif %}
+	{% endfor %}
+</section>

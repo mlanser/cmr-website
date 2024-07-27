@@ -42,7 +42,11 @@
                     <span class="image fit"><img src="{% static 'images/pic07-1080x720.jpg' %}" alt="" /></span>
                 {% endif %}
             {% endwith %}
+            {% if is_markdown %}
+            {{ page.body|markdown|safe }}
+            {% else %}
             {{ page.body|richtext }}
+            {% endif %}
         </div>
 
         <!-- Sidebar -->

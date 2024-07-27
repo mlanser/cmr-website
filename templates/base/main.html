@@ -10,7 +10,9 @@
 	</header>
 
 	<!-- Banner -->
-	{% if page.show_banner %}
+	{% if show_slides %}
+	{% include "includes/banner-sides.html" %}
+	{% elif show_banner %}
 	{% include "includes/banner.html" %}
 	{% endif %}
 

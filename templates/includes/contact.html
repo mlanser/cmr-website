@@ -26,7 +26,7 @@
 				</div>
 			</form>
 		</section>
-		{% with youtube=settings.base.ContactSettings.youtube instagram=settings.base.ContactSettings.instagram visit=settings.base.ContactSettings.visit_addr mon=settings.base.ContactSettings.open_MON tue=settings.base.ContactSettings.open_TUE wed=settings.base.ContactSettings.open_WED thu=settings.base.ContactSettings.open_THU fri=settings.base.ContactSettings.open_fri sat=settings.base.ContactSettings.open_SAT sun=settings.base.ContactSettings.open_SUN holidays=settings.base.ContactSettings.open_holidays %}
+		{% with youtube=settings.base.ContactSettings.youtube instagram=settings.base.ContactSettings.instagram addr=settings.base.ContactSettings.visit_addr map=settings.base.ContactSettings.visit_map_link mon=settings.base.ContactSettings.open_MON tue=settings.base.ContactSettings.open_TUE wed=settings.base.ContactSettings.open_WED thu=settings.base.ContactSettings.open_THU fri=settings.base.ContactSettings.open_fri sat=settings.base.ContactSettings.open_SAT sun=settings.base.ContactSettings.open_SUN holidays=settings.base.ContactSettings.open_holidays %}
 			{% if youtube or instagram or visit %}
 			<section>
 				<h2>Other ways to reach us</h2>
@@ -45,25 +45,25 @@
 						<p><a href="https://www.instagram.com/{{ instagram }}">@{{ instagram }}</a></p>
 					</li>
 					{% endif %}
-					{% if visit %}
+					{% if visit_addr %}
 					<li>
-						<span class="icon-wrapper"><span class="icon solid fa-building"></span></span>
+						<span class="icon-wrapper"><span class="icon solid fa-map-marker-alt"></span></span>
 						<h3>Club Location</h3>
-						{{ visit|linebreaks }}
+						<p>{% if map %}<a href="{{ map }}" target="_blank">{% endif %}{{ addr|linebreaks }}{% if map %}</a>{% endif %}</p>
 					</li>
 					{% endif %}
 					<li>
 						<span class="icon-wrapper"><span class="icon solid fa-clock"></span></span>
 						<h3>Open to Public</h3>
 						<p>
-							{% if mon %}<b>MON {{ mon }}</b>{% else %}MON <i>Closed</i>{% endif %}<br />
-							{% if tue %}<b>TUE {{ tue }}</b>{% else %}TUE <i>Closed</i>{% endif %}<br />
-							{% if wed %}<b>WED {{ wed }}</b>{% else %}WED <i>Closed</i>{% endif %}<br />
-							{% if thu %}<b>THU {{ thu }}</b>{% else %}THU <i>Closed</i>{% endif %}<br />
-							{% if fri %}<b>FRI {{ fri }}</b>{% else %}FRI <i>Closed</i>{% endif %}<br />
-							{% if sat %}<b>SAT {{ sat }}</b>{% else %}SAT <i>Closed</i>{% endif %}<br />
-							{% if sun %}<b>SUN {{ sun }}</b>{% else %}SUN <i>Closed</i>{% endif %}<br />
-							<i>{% if holidays %}{{ holidays }}{% else %}Holiday hours may differ.{% endif %}</i>
+							{% if mon %}<strong>MON {{ mon }}</strong>{% else %}MON <em>Closed</em>{% endif %}<br />
+							{% if tue %}<strong>TUE {{ tue }}</strong>{% else %}TUE <em>Closed</em>{% endif %}<br />
+							{% if wed %}<strong>WED {{ wed }}</strong>{% else %}WED <em>Closed</em>{% endif %}<br />
+							{% if thu %}<strong>THU {{ thu }}</strong>{% else %}THU <em>Closed</em>{% endif %}<br />
+							{% if fri %}<strong>FRI {{ fri }}</strong>{% else %}FRI <em>Closed</em>{% endif %}<br />
+							{% if sat %}<strong>SAT {{ sat }}</strong>{% else %}SAT <em>Closed</em>{% endif %}<br />
+							{% if sun %}<strong>SUN {{ sun }}</strong>{% else %}SUN <em>Closed</em>{% endif %}<br />
+							<em>{% if holidays %}{{ holidays }}{% else %}Holiday hours may differ.{% endif %}</em>
 						</p>
 					</li>
 				</ul>

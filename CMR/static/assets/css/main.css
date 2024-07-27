@@ -26,7 +26,8 @@ section, summary, time, mark, audio, video {
 	border: 0;
 	font-size: 100%;
 	font: inherit;
-	vertical-align: baseline;}
+	vertical-align: baseline;
+}
 
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
@@ -2014,7 +2015,9 @@ input, select, textarea {
 				flex-direction: column;
 			}
 
-				.features > section {
+				.features > section,
+				.features.three > section,
+				.features.two > section {
 					width: 100%;
 				}
 
@@ -2330,6 +2333,21 @@ input, select, textarea {
 			cursor: inherit;
 		}
 
+
+	.icon-label {
+		width: 45%;
+		height: 2em;
+		text-transform: uppercase;
+		font-size: 1em;
+		font-weight: 700;
+		line-height: 2em;
+		text-align: left;
+		margin-left: 0;
+		display: inline-block;
+		position: relative;
+		margin: 1.235em 0;
+	}
+
 	.icon-wrapper {
 		width: 4em;
 		height: 2em;
@@ -2375,13 +2393,13 @@ input, select, textarea {
 			margin: 1.235em 0 3.235em 0;
 		}
 
-		.icon-wrapper.major .icon-label {
-			width: 20em;
-			text-transform: uppercase;
-			font-size: 1em;
-			font-weight: 700;
-			margin-left: 0;
-			display: inline-block;
+		.icon-label.major-label {
+			margin: 1.235em 0 3.235em -.5em;
+			padding-left: .765em;
+		}
+
+		.icon-wrapper.major-label {
+			margin: 1.235em 0 3.235em 0;
 		}
 
 		.icon-wrapper.small {
@@ -2391,6 +2409,11 @@ input, select, textarea {
 			.icon-wrapper.small .icon:before {
 				font-size: 1.25rem;
 			}
+
+	.icon-label {
+		background-color: #f6f6f6;
+		box-shadow: 0 -1px 0 0 #f6f6f6, 0 1px 0 0 #f6f6f6;
+	}
 
 	.icon-wrapper {
 		background-color: #f6f6f6;
@@ -2458,6 +2481,16 @@ input, select, textarea {
 				width: 100%;
 			}
 
+	/* [ML] Added */
+	section.post a,
+	section.post a:link,
+	section.post a:visited,
+	section.post a:active,
+	section.post a:hover {
+		border: 0;
+		text-decoration: none;
+	}
+
 /* List */
 
 	ol {
@@ -2524,6 +2557,26 @@ input, select, textarea {
 		list-style: none;
 		margin-left: -1em;
 		padding-left: 0;
+	}
+	/* [ML] Custom */
+	ul.actions.list {
+		margin: 0;
+	 /* padding: 2.5em 2.5em 0.5em 2.5em ; */
+		padding: 1em   0     2.5em 1.5em;
+		background-color: #fff;
+	}
+	@media screen and (max-width: 1280px) {
+		ul.actions.list {
+		 /* padding: 2em  2em 0.1em 2em ; */
+			padding: 1em  0   1.9em 1em;
+		}
+	}
+
+	@media screen and (max-width: 736px) {
+		ul.actions.list {
+		 /* padding: 2em  1.5em 0.1em 1.5em ; */
+			padding: 1em  0     1.4em .5em;
+		}
 	}
 
 		ul.actions li {
@@ -2690,7 +2743,8 @@ input, select, textarea {
 
 			ul.bulleted-icons li h3 {
 				font-size: 0.9em;
-				margin-bottom: 0.5em;
+				/* margin-bottom: 0.5em; */
+				margin-bottom: 0.125em;
 				padding-bottom: 0;
 			}
 
@@ -2832,6 +2886,11 @@ input, select, textarea {
 			flex-grow: 1;
 		}
 
+		/* [ML] Custom */
+		.post .content.list p {
+			margin-bottom: 0;
+		}
+
 		@media screen and (max-width: 1280px) {
 
 			.post .content {
@@ -2923,6 +2982,15 @@ input, select, textarea {
 			padding-bottom: 0.75em;
 		}
 
+		header.major p.metadata {
+			color: #999;
+			font-size: 0.9em;
+			margin: 0 0 1.5em 0;
+		}
+		header.major p.metadata .icon {
+			margin-right: .5em;
+		}
+
 		@media screen and (max-width: 1280px) {
 
 			header.major h2 {
@@ -2930,6 +2998,20 @@ input, select, textarea {
 			}
 
 		}
+
+/* [ML] Content Tiles */
+	.content.tile h3 {
+		width: 100%;
+		margin: 0 0 0.5em 0;
+	}
+	.content.tile p {
+		margin: 0 0 1.5em 0;
+	}
+	.content.tile .image {
+		float: right;
+		margin: 0 0 .5em 1em;
+		top: 0.25em;
+	}
 
 /* Spotlight */
 
@@ -3111,7 +3193,8 @@ input, select, textarea {
 		}
 
 			.wrapper.content-pad .content {
-				padding: 4em 0 2em 0 ;
+				/* padding: 4em 0 2em 0 ; */
+				padding: 3em 0 2em 0 ;
 			}
 
 		.wrapper.split > .inner {
@@ -3718,11 +3801,13 @@ input, select, textarea {
 				}
 
 				.wrapper.major-pad {
-					padding: 4em 0 2em 0 ;
+					/* padding: 4em 0 2em 0 ; */
+					padding: 2.5em 0 2em 0 ;
 				}
 
 				.wrapper.content-pad .content {
-					padding: 3em 0 1em 0 ;
+					/* padding: 3em 0 1em 0 ; */
+					padding: 2em 0 1em 0 ;
 				}
 
 				.wrapper.split > .inner > * {
@@ -3785,11 +3870,13 @@ input, select, textarea {
 				}
 
 				.wrapper.major-pad {
+					/* padding: 2.5em 0 0.5em 0 ; */
 					padding: 2.5em 0 0.5em 0 ;
 				}
 
 				.wrapper.content-pad .content {
-					padding: 2.5em 0 0.5em 0 ;
+					/* padding: 2.5em 0 0.5em 0 ; */
+					padding: 2em 0 0.5em 0 ;
 				}
 
 		}

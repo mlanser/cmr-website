@@ -1,31 +1,32 @@
-# ... (existing code)
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from modelcluster.fields import ParentalKey
 
-from wagtail.admin.panels import FieldPanel, MultiFieldPanel, PageChooserPanel
-
+from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel, PageChooserPanel
 from wagtail.models import Page, Orderable
 
+from base.models import BannerImage
+from blog.models import BlogPage, BlogMDPage
+from sections.models import SectionPage, SectionMDPage
 
-from base.models import BannerSlide, EventItem
+
+# ---------------------------------------------------------
+#         C O R E   H E L P E R   C L A S S E S
+# ---------------------------------------------------------
 
 
-# -------------------------------------
-#         C O R E   M O D E L S
-# -------------------------------------
+# ---------------------------------------------------------
+#           C O R E   P A G E   M O D E L S
+# ---------------------------------------------------------
+# Home Page model
+#
+# NOTE: The home page is specail in that it does not have any content of its own
+#       and only aggregates content from other sections.
 class HomePage(Page):
     # --------------------------------
     # Database fields
     # --------------------------------
-    # Show banner section?
-    show_banner = models.BooleanField(
-        default=False,
-        verbose_name='Show banner',
-        help_text='Show banner on home page?',
-    )
-
     # Show promoted content on home page?
     show_promo = models.BooleanField(
         default=False,
@@ -60,7 +61,6 @@ class HomePage(Page):
         verbose_name='Show recent',
         help_text='Show recent content on home page?',
     )
-    # Number of recent items to show on home page
     max_recent = models.IntegerField(
         default=6,
         validators=[
@@ -68,12 +68,12 @@ class HomePage(Page):
             MaxValueValidator(12),
         ],
         verbose_name='Max recent',
-        help_text='Maximum number of recent items to show on home page',
+        help_text='Maximum recent items to show on home page',
     )
 
     # Show contact form and social media section?
     show_contact_info = models.BooleanField(
-        default=False,
+        default=True,
         verbose_name='Show contact info',
         help_text='Show content form and social media links on home page?',
     )
@@ -82,41 +82,30 @@ class HomePage(Page):
     # Editor panels configuration
     # --------------------------------
     content_panels = Page.content_panels + [
-        MultiFieldPanel(
-            [
-                FieldPanel('show_banner'),
-                # PageChooserPanel('promoted_page', 'sections.SectionPage'),
-            ],
-            heading='Home page banner slides',
-        ),
+        InlinePanel('banner_slides', label='Banner slides'),
         MultiFieldPanel(
             [
                 FieldPanel('show_promo'),
                 PageChooserPanel('promoted_page', 'sections.SectionPage'),
             ],
-            heading='Home page promoted content',
+            heading='Promoted content',
         ),
+        InlinePanel('event_items', label='Event items'),
         MultiFieldPanel(
             [
                 FieldPanel('show_happening'),
                 FieldPanel('show_newsletter'),
             ],
-            heading='Home page events',
+            heading='Events and newsletter sign-up',
         ),
         MultiFieldPanel(
             [
                 FieldPanel('show_recent'),
                 FieldPanel('max_recent'),
             ],
-            heading='Home page recent content',
+            heading='Recent content',
         ),
-        MultiFieldPanel(
-            [
-                FieldPanel('show_contact_info'),
-                # PageChooserPanel('promoted_page', 'sections.SectionPage'),
-            ],
-            heading='Home page contact form, social media links, and visiting address and hours.',
-        ),
+        FieldPanel('show_contact_info'),
     ]
 
     # promote_panels = []
@@ -127,8 +116,13 @@ class HomePage(Page):
     # --------------------------------
     # Parent page / subpage type rules
     # --------------------------------
-    # parent_page_types = ['home.HomePage']
-    subpage_types = ['sections.SectionMain', 'base.StandardPage']
+    parent_page_types = ['wagtailcore.Page']
+    subpage_types = [
+        'sections.SectionMain',
+        'blog.BlogMain',
+        'base.StandardPage',
+        'base.StandardMDPage',
+    ]
 
     # --------------------------------
     # Misc fields, helpers, and custom methods
@@ -141,41 +135,35 @@ class HomePage(Page):
         # Add extra variables and return updated context
         context['is_home'] = True
 
-        context['slides'] = []
-        # if self.slide01:
-        #     context['slides'].append(
-        #         {'image': self.slide01, 'text': self.slide01_text, 'link': self.slide01_link}
-        #     )
-        # if self.slide02:
-        #     context['slides'].append(
-        #         {'image': self.slide02, 'text': self.slide02_text, 'link': self.slide02_link}
-        #     )
-        # if self.slide03:
-        #     context['slides'].append(
-        #         {'image': self.slide03, 'text': self.slide03_text, 'link': self.slide03_link}
-        #     )
-        # if self.slide04:
-        #     context['slides'].append(
-        #         {'image': self.slide04, 'text': self.slide04_text, 'link': self.slide04_link}
-        #     )
+        context['recent_posts'] = (
+            self.get_descendents()
+            .type(SectionPage, SectionMDPage, BlogPage, BlogMDPage)
+            .live()
+            .order_by('-first_published_at')
+        )
 
-        # sectionpages = self.get_children().live().order_by('-first_published_at')
-        # context['sectionpages'] = sectionpages
         return context
 
 
 # -------------------------------------
 #     S U P P O R T   M O D E L S
 # -------------------------------------
-# HomePage Banner model
-class HomePageBanner(Orderable, BannerSlide):
-    slide01 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slide01')
-    slide02 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slide02')
-    slide03 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slide03')
-    slide04 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slide04')
+# Home Page Banner Slides
+class BannerSlide(Orderable, BannerImage):
+    page = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slides')
 
 
 # HomePage Event model
-class HomePageEvents(Orderable, EventItem):
-    event01 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='event_item01')
-    event02 = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='event_item02')
+class EventItem(Orderable):
+    page = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='event_items')
+    event = models.ForeignKey(
+        'wagtailcore.Page',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='Promoted event',
+        help_text='Select event item to promote on home page',
+    )
+
+    panels = [
+        PageChooserPanel('event', 'sections.SectionPage'),
+    ]

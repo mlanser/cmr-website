@@ -1,0 +1,64 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+<section id="contact" class="wrapper split">
+	<div class="inner">
+		<section>
+			<h2>Send us a message</h2>
+			<form method="post" action="#">
+				<div class="row gtr-uniform">
+					<div class="col-6 col-12-large col-6-medium col-12-xsmall">
+						<label for="name">Name</label>
+						<input type="text" name="name" id="name" />
+					</div>
+					<div class="col-6 col-12-large col-6-medium col-12-xsmall">
+						<label for="email">Email</label>
+						<input type="email" name="email" id="email" />
+					</div>
+					<div class="col-12">
+						<label for="message">Message</label>
+						<textarea name="message" id="message" rows="5"></textarea>
+					</div>
+					<div class="col-12">
+						<ul class="actions">
+							<li><input type="submit" value="Send Message" class="primary" /></li>
+							<li><input type="reset" value="Reset" /></li>
+						</ul>
+					</div>
+				</div>
+			</form>
+		</section>
+		<section>
+			<h2>Other ways to reach us</h2>
+			<ul class="bulleted-icons">
+				<li>
+					<span class="icon-wrapper"><span class="icon brands fa-youtube"></span></span>
+					<h3>Youtube</h3>
+					<p><a href="#">@carolinamodelrr</a></p>
+				</li>
+				<li>
+					<span class="icon-wrapper"><span class="icon brands fa-instagram"></span></span>
+					<h3>Instagram</h3>
+					<p><a href="#">@carolinamodelrr</a></p>
+				</li>
+				<li>
+					<span class="icon-wrapper"><span class="icon solid fa-map-marker-alt"></span></span>
+					<h3>Club Location</h3>
+					<p><a href="https://maps.app.goo.gl/sp73vCaH6ZwXppUs6" target="_blank">234b E Washington St<br />Greensboro, NC 27401</a></p>
+				</li>
+				<li>
+					<span class="icon-wrapper"><span class="icon solid fa-clock"></span></span>
+					<h3>Open to Public</h3>
+					<p>
+						MON <em>Closed</em><br />
+						TUE <em>Closed</em><br />
+						WED <em>Closed</em><br />
+						<strong>THU 7P - 9P</strong><br />
+						FRI <em>Closed</em><br />
+						<strong>SAT 10A - 5P</strong><br />
+						<strong>SUN 2P - 5P</strong><br />
+						<em>Holiday hours may differ.</em>
+					</p>
+				</li>
+			</ul>
+		</section>
+	</div>
+</section>

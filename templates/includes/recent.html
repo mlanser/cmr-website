@@ -1,18 +1,18 @@
 {% load static wagtailcore_tags wagtailimages_tags %}
 
-{% for post in posts %}
-<section class="post">
-    <span class="image"><img src="{% image post.image max-1080x720 %}" alt="" /></span>
-    <div class="content">
-        <h3>{{ post.title }}</h3>
-        <p>{{ post.intro|richtext }}</p>
-        <ul class="actions">
-            <li><a href="#" class="button">More</a></li>
-        </ul>
-    </div>
-</section>
+{% for post in recent_posts %}
+    <section class="post">
+        <a href="{% pageurl post %}" class="image"><img src="{% image post.image max-551x297 %}" alt="{{ post.title }}" /></a>
+        <div class="content">
+            <a href="{% pageurl post %}"><h3>{{ post.title }}</h3></a>
+            <p>{{ post.intro|richtext }}</p>
+            <ul class="actions">
+                <li><a href="{% pageurl post %}" class="button">More</a></li>
+            </ul>
+        </div>
+    </section>
 {% empty %}
-{% if DEBUG %}
+    {% if DEBUG %}
     {# Show default content if no slide is defined #}
     <section class="post">
         <span class="image"><img src="{% static 'images/pic02-1080x720.jpg'%}" alt="" /></span>

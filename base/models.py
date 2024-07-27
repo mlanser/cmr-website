@@ -35,22 +35,22 @@ from sections.blocks import SectionPageStreamBlock
 @register_setting
 class ContactSettings(BaseGenericSetting):
     email_cmr = models.EmailField(
-        help_text='Email address for CMR', verbose_name='CMR Email', blank=True
+        help_text='Email address for CMR', verbose_name='CMR email', blank=True
     )
     email_nrhs = models.EmailField(
-        help_text='Email address for NRHS', verbose_name='NRHS Email', blank=True
+        help_text='Email address for NRHS', verbose_name='NRHS email', blank=True
     )
     phone_cmr = PhoneNumberField(
-        help_text='Phone number for CMR', verbose_name='CMR Phone', blank=True
+        help_text='Phone number for CMR', verbose_name='CMR phone', blank=True
     )
     phone_nrhs = PhoneNumberField(
-        help_text='Phone number for NRHS', verbose_name='NRHS Phone', blank=True
+        help_text='Phone number for NRHS', verbose_name='NRHS phone', blank=True
     )
     address_cmr = models.TextField(
-        help_text='Mailing address for CMR.', verbose_name='CMR Mailing Address', blank=True
+        help_text='Mailing address for CMR.', verbose_name='CMR mailing address', blank=True
     )
     address_nrhs = models.TextField(
-        help_text='Mailing address for NRHS.', verbose_name='NRHS Mailing Address', blank=True
+        help_text='Mailing address for NRHS.', verbose_name='NRHS mailing address', blank=True
     )
     youtube = models.CharField(
         help_text='Youtube channel name without @ symbol. Example: cmr_railway.',
@@ -66,7 +66,12 @@ class ContactSettings(BaseGenericSetting):
     )
     visit_addr = models.TextField(
         help_text='Visiting address for CMR layout and NRHS exhibits.',
-        verbose_name='Visiting Address',
+        verbose_name='Visiting address',
+        blank=True,
+    )
+    visit_map_link = models.URLField(
+        help_text='Map link for visiting address.',
+        verbose_name='Map link',
         blank=True,
     )
     open_MON = models.CharField(
@@ -126,6 +131,30 @@ class ContactSettings(BaseGenericSetting):
         blank=True,
     )
 
+    terms_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='T&Cs page',
+        help_text='Select T&Cs page for links in footer.',
+    )
+    privacy_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Privacy page',
+        help_text='Select privacy page for links in footer.',
+    )
+    rss_link = models.URLField(
+        help_text='Link for RSS feed.',
+        verbose_name='RSS link',
+        blank=True,
+    )
+
     panels = [
         MultiFieldPanel(
             [
@@ -138,6 +167,7 @@ class ContactSettings(BaseGenericSetting):
                 FieldPanel('youtube'),
                 FieldPanel('instagram'),
                 FieldPanel('visit_addr'),
+                FieldPanel('visit_map_link'),
             ],
             'Contact Settings',
         ),
@@ -153,6 +183,14 @@ class ContactSettings(BaseGenericSetting):
                 FieldPanel('open_holidays'),
             ],
             'Visiting Hours',
+        ),
+        MultiFieldPanel(
+            [
+                PageChooserPanel('terms_page', 'base.StandardMDPage'),
+                PageChooserPanel('privacy_page', 'base.StandardMDPage'),
+                FieldPanel('rss_link'),
+            ],
+            'Links to T&Cs and RSS feed',
         ),
     ]
 
@@ -218,13 +256,19 @@ class FooterText(
 @register_snippet
 class Author(models.Model):
     name = models.CharField(max_length=255)
-    author_image = models.ForeignKey(
-        'wagtailimages.Image', null=True, blank=True, on_delete=models.SET_NULL, related_name='+'
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Author image',
+        help_text='Use image ratio 1:1 and max size 800x800 px.',
     )
 
     panels = [
         FieldPanel('name'),
-        FieldPanel('author_image'),
+        FieldPanel('image'),
     ]
 
     def __str__(self):
@@ -232,6 +276,81 @@ class Author(models.Model):
 
     class Meta:
         verbose_name_plural = 'Authors'
+
+
+@register_snippet
+class Sponsor(models.Model):
+    name = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Sponsor image',
+        help_text='Use image ratio 1:1 and max size 800x800 px.',
+    )
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('image'),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'Sponsors'
+
+
+@register_snippet
+class Organizer(models.Model):
+    name = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Organizer image',
+        help_text='Use image ratio 1:1 and max size 800x800 px.',
+    )
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('image'),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'Organizers'
+
+
+@register_snippet
+class Location(models.Model):
+    name = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Location image',
+        help_text='Use image ratio 1:1 and max size 800x800 px.',
+    )
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('image'),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'Locations'
 
 
 class ContactField(AbstractFormField):
@@ -265,15 +384,13 @@ class ContactForm(AbstractEmailForm):
 # Plain standard page without banner or header sections
 #
 # NOTE: This is a simple page with a basic fields (e.g. title,
-#       body, etc.) and it's best used for pages sugas T&C, etc.
+#       body, etc.) and it's best used for pages such as T&C, etc.
 class StandardPage(Page):
     # Database fields
-    intro = models.CharField(max_length=250)
-    body = StreamField(
-        SectionPageStreamBlock(),
+    intro = models.CharField(max_length=255)
+    body = RichTextField(
         blank=True,
-        use_json_field=True,
-        help_text='Create a plain page without sidebar using Markdown.',
+        help_text='Create a plain page without sidebar using RichText format.',
     )
 
     # Search index configuration
@@ -298,80 +415,69 @@ class StandardPage(Page):
 
     # Misc fields, helpers, and custom methods
     page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
+    template = 'base/standard_page.html'
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
 
-        # Add extra variables and return updated context
-        context['DEBUG'] = 'DEBUG'  # Placeholder for custom context variables
+        context['show_meta'] = True
+        context['show_intro'] = False
+        context['is_richtext'] = True
         return context
 
 
-# Abstract model for banner slide
-class BannerSlide(models.Model):
-    image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
+class StandardMDPage(Page):
+    # Database fields
+    intro = models.CharField(max_length=255)
+    body = StreamField(
+        SectionPageStreamBlock(),
         blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='Slide image',
-        help_text='Image for the slide',
-    )
-    text = models.CharField(
-        blank=True,
-        max_length=255,
-        verbose_name='Slide text',
-        help_text='Text to display on the slide',
-    )
-    url = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='Slide link',
-        help_text='Optional link for the slide',
+        use_json_field=True,
+        help_text='Create a plain page without sidebar using Markdown format.',
     )
 
-    panels = [
-        FieldPanel('image'),
-        FieldPanel('text'),
-        FieldPanel('url'),
+    # Search index configuration
+    search_fields = Page.search_fields + [
+        index.SearchField('body'),
+        index.SearchField('intro'),
     ]
 
-    class Meta:
-        abstract = True
-
-
-# Abstract model for event tile
-class EventItem(models.Model):
-    event_page = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='Promoted event',
-        help_text='Select event content to promote on home page',
-    )
-
-    panels = [
-        PageChooserPanel('event_page', 'sections.SectionPage'),
+    # Editor panels configuration
+    content_panels = Page.content_panels + [
+        FieldPanel('intro'),
+        FieldPanel('body'),
     ]
 
-    class Meta:
-        abstract = True
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
+    ]
+
+    # Parent page / subpage type rules
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+
+    # Misc fields, helpers, and custom methods
+    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
+    template = 'base/standard_page.html'
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+
+        context['show_meta'] = True
+        context['show_intro'] = False
+        context['is_markdown'] = True
+        return context
 
 
+# Advert model
 class Advert(PreviewableMixin, index.Indexed, models.Model):
     url = models.URLField(null=True, blank=True)
     text = models.CharField(max_length=255)
     image = models.ForeignKey('wagtailimages.Image', on_delete=models.CASCADE, related_name='+')
 
     panels = [
-        FieldPanel("url"),
-        FieldPanel("text"),
+        FieldPanel('url'),
+        FieldPanel('text'),
         FieldPanel('image'),
     ]
 
@@ -385,17 +491,105 @@ class Advert(PreviewableMixin, index.Indexed, models.Model):
 
     @property
     def preview_modes(self):
-        return PreviewableMixin.DEFAULT_PREVIEW_MODES + [("alt", "Alternate")]
+        return PreviewableMixin.DEFAULT_PREVIEW_MODES + [('alt', 'Alternate')]
 
     def get_preview_template(self, request, mode_name):
         templates = {
-            "": "base/previews/advert.html",  # Default preview mode
-            "alt": "base/previews/advert_alt.html",  # Alternate preview mode
+            '': 'base/previews/advert.html',  # Default preview mode
+            'alt': 'base/previews/advert_alt.html',  # Alternate preview mode
         }
-        return templates.get(mode_name, templates[""])
+        return templates.get(mode_name, templates[''])
 
     def get_preview_context(self, request, mode_name):
         context = super().get_preview_context(request, mode_name)
-        if mode_name == "alt":
-            context["extra_context"] = "Alternate preview mode"
+        if mode_name == 'alt':
+            context['extra_context'] = 'Alternate preview mode'
         return context
+
+
+# Related Links - abstract model
+class RelatedLink(models.Model):
+    name = models.CharField(max_length=255)
+    url = models.URLField()
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('url'),
+    ]
+
+    class Meta:
+        abstract = True
+
+
+# Gallery Images
+class GalleryImage(models.Model):
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='Gallery image',
+        help_text='Use image ratio 3:2 and max size 1200 x 800 px.',
+    )
+    caption = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Image caption',
+        help_text='Text is used as ALT text for the image.',
+    )
+    credit_text = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Image credit',
+        help_text='Image credits display below image.',
+    )
+    credit_url = models.URLField(
+        blank=True, verbose_name='Credit URL', help_text='URL for image credits.'
+    )
+
+    panels = [
+        FieldPanel('image'),
+        FieldPanel('caption'),  # ALT text
+        FieldPanel('credit_text'),
+        FieldPanel('credit_url'),
+    ]
+
+    class Meta:
+        abstract = True
+
+
+# Banner Images
+class BannerImage(models.Model):
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Banner image',
+        help_text='Use image ratio 20:9 and max size 2000 x 900 px',
+    )
+    caption = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Banner text',
+        help_text='Optional text to display on the banner image',
+    )
+    credit_text = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Image credit',
+        help_text='Image credits display below image.',
+    )
+    credit_url = models.URLField(
+        blank=True, verbose_name='Credit URL', help_text='URL for image credits.'
+    )
+
+    panels = [
+        FieldPanel('image'),
+        FieldPanel('caption'),  # ALT text
+        FieldPanel('credit_text'),
+        FieldPanel('credit_url'),
+    ]
+
+    class Meta:
+        abstract = True

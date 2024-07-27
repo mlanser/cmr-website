@@ -9,23 +9,7 @@
         {% endfor %}
 
         {% if DEBUG %}
-        <li>
-            <a href="#" class="submenu fa-angle-down">Dropdown Test</a>
-            <ul>
-                <li><a href="{% url 'theme_home' %}">Theme Home</a></li>
-                <li><a href="{% url 'theme_elements' %}">Theme Elements</a></li>
-                <li><a href="{% url 'theme_sctn_main' %}">Theme Section Main</a></li>
-                <li><a href="{% url 'theme_sctn_page' %}">Theme Section Page</a></li>
-                <li>
-                    <a href="#">Submenu</a>
-                    <ul>
-                        <li><a href="#">L2 - AAA</a></li>
-                        <li><a href="#">L2 - BBB</a></li>
-                        <li><a href="#">L2 - CCC</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </li>
+        {% include "debug/theme-debug-menu.html" %}
         {% endif %}
 
         {% if user.is_authenticated %}

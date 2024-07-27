@@ -153,7 +153,9 @@ INSTALLED_APPS = [
     'wagtailmarkdown',
     # -- CMR Website-specific apps ----
     'base',
+    'blog',
     'home',
+    'index',
     # 'events',
     'sections',
     # 'locations',
@@ -392,7 +394,10 @@ WAGTAILMARKDOWN = {
     'tab_length': 4,  # optional. Sets the length of tabs used by python-markdown to render the output. This is the number of spaces used to replace with a tab character. Defaults to 4.
 }
 
-# ADMIN_PASSWORD = env('ADMIN_PASSWORD', 'changeme')
+# Custom settings for DEV only
+if DEBUG:
+    # ADMIN_PASSWORD = env('ADMIN_PASSWORD', 'changeme')
+    ADMIN_PASSWORD = env('ADMIN_PASSWORD') or 'changeme'
 
 # Content Security policy settings
 # http://django-csp.readthedocs.io/en/latest/configuration.html
