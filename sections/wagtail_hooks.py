@@ -9,10 +9,11 @@ class AdvertViewSet(SnippetViewSet):
     model = Advert
 
     panels = [
-        FieldPanel("url"),
-        FieldPanel("text"),
+        FieldPanel('url'),
+        FieldPanel('text'),
         FieldPanel('image'),
     ]
+
 
 # Instead of using @register_snippet as a decorator on the model class,
 # register the snippet using register_snippet as a function and pass in

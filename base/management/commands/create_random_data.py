@@ -3,6 +3,7 @@ from pathlib import Path
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import lorem_ipsum
+
 from wagtail.rich_text import RichText
 
 # from base.models import FooterText, HomePage, Person, StandardPage
