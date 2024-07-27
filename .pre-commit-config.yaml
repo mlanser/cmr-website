@@ -14,7 +14,9 @@ repos:
         exclude: |
             (?x)^(
                static/assets/webfonts/fa-solid-900.svg |
-               static/assets/webfonts/fa-brands-400.svg
+               static/assets/webfonts/fa-brands-400.svg |
+               static/logos/.*\.png |
+               static/logos/.*\.svg
             )$
     -   id: check-json
     -   id: check-toml

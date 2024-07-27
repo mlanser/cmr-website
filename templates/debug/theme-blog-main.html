@@ -1,0 +1,97 @@
+<!DOCTYPE HTML>
+<!--
+	Slate by Pixelarity
+	pixelarity.com | hello@pixelarity.com
+	License: pixelarity.com/license
+	====================================
+	This theme has been customized for CMR to work
+	with Django and Wagtail CMS by Martin Lanser
+-->
+{% load static wagtailimages_tags wagtailcore_tags wagtailuserbar wagtailmarkdown %}
+<html>
+	<head>
+		<title>DEBUG - Blog Main</title>
+		<meta charset="utf-8" />
+        {% if page.search_description %}
+        <meta name="description" content="{{ page.search_description }}" />
+        {% endif %}
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+        {# Force all links in the live preview panel to be opened in a new tab #}
+        {% if request.in_preview_panel %}
+        <base target="_blank">
+        {% endif %}
+
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/main.css' %}" />
+		<noscript>
+			<link rel="stylesheet" type="text/css" href="{% static 'assets/css/noscript.css' %}" />
+		</noscript>
+        {% block extra_css %}
+        {# Override this in templates to add extra stylesheets #}
+        {% endblock %}
+	</head>
+	<body class="is-preload">
+
+		<!-- Header -->
+		<header id="header">
+			{% include "includes/navbar.html" %}
+		</header>
+
+		<!-- Banner -->
+		{% include "debug/theme-banner.html" %}
+
+		<!-- Main -->
+		<section id="main" class="wrapper sidebar right">
+			<div class="inner">
+
+				<!-- Content -->
+				<div class="content">
+					<!-- Happening - Events, Shows, Calendar -->
+					<section id="two" class="wrapper content-pad">
+						<div class="inner">
+							<div class="features two">
+								{% include "debug/theme-event-tiles.html" %}
+							</div>
+						</div>
+					</section>
+
+					<!-- Recent Content -->
+					{% if page.show_recent or True %}
+					<section id="three" class="wrapper style2">
+						<div class="inner">
+							<h2>Recent Posts</h2>
+							<div class="posts">
+								{% include "debug/theme-recent.html" %}
+							</div>
+						</div>
+					</section>
+					{% endif %}
+				</div>
+
+				<!-- Sidebar -->
+				{% include "debug/theme-sidebar.html" %}
+
+			</div>
+		</section>
+
+		<!-- Contact -->
+		{% if page.show_contact or False %}
+		{% include "debug/theme-contact.html" %}
+		{% endif %}
+
+		<!-- Footer -->
+		{% include "debug/theme-footer.html" %}
+
+		<!-- Scripts -->
+		<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+		<script src="{% static 'assets/js/jquery.dropotron.min.js' %}"></script>
+		<script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+		<script src="{% static 'assets/js/browser.min.js' %}"></script>
+		<script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+		<script src="{% static 'assets/js/util.js' %}"></script>
+		<script src="{% static 'assets/js/main.js' %}"></script>
+        {% block extra_js %}
+        {# Override this in templates to add extra javascript #}
+        {% endblock %}
+	</body>
+</html>

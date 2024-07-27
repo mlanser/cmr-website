@@ -1,0 +1,70 @@
+{% extends "base/base.html" %}
+{% load static wagtailimages_tags wagtailcore_tags wagtailuserbar %}
+
+{% block extra_css %}
+{% comment %}
+<!-- ================================================================== -->
+Delete this entire EXTRA_CSS BLOCK if you want to remove the welcome screen!
+<!-- ================================================================== -->
+{% endcomment %}
+<link rel="stylesheet" href="{% static 'css/welcome_page.css' %}">
+{% endblock extra_css %}
+
+{% block page_body %}
+	{% wagtailuserbar %}
+
+	<!-- Header -->
+	<header id="header" class="reveal alt">
+		{% include "includes/navbar.html" %}
+	</header>
+
+	<!-- Banner -->
+	{% if page.show_banner %}
+	{% include "includes/banner.html" %}
+	{% endif %}
+
+	<!-- Promoted Content -->
+	{% if page.show_promo %}
+	{% include "includes/promo.html" %}
+	{% endif %}
+
+	<!-- Happening - Events, Shows, Calendar -->
+	{% if page.show_happening %}
+	<section id="two" class="wrapper content-pad">
+		<div class="inner">
+			<div class="features {% if show_newsletter %}three{% else %}two{% endif %}">
+				{% include "includes/event-tiles.html" %}
+				{% if show_newsletter %}
+				{% include "includes/newsletter-tile.html" %}
+				{% endif %}
+			</div>
+		</div>
+	</section>
+	{% endif %}
+
+	{% block content %}
+	{% comment %}
+	<!-- ================================================================== -->
+	Delete this entire CONTENT BLOCK if you want to remove the welcome screen!
+	<!-- ================================================================== -->
+	{% endcomment %}
+	{% include 'home/welcome_page.html' %}
+	{% endblock content %}
+
+	<!-- Recent Content -->
+	{% if page.show_recent %}
+	<section id="three" class="wrapper style2">
+		<div class="inner">
+			<h2>{% if header_recent %}{{ header_recent }}{% else %}Recent Posts{% endif %}</h2>
+			<div class="posts">
+				{% include "includes/recent.html" %}
+			</div>
+		</div>
+	</section>
+	{% endif %}
+
+	<!-- Contact -->
+	{% if page.show_contact_info %}
+	{% include "includes/contact.html" %}
+	{% endif %}
+{% endblock %}

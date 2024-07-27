@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+<!--
+	Slate by Pixelarity
+	pixelarity.com | hello@pixelarity.com
+	License: pixelarity.com/license
+	====================================
+	This theme has been customized for CMR to work
+	with Django and Wagtail CMS by Martin Lanser
+-->
+{% load static footer_tags navigation_tags wagtailimages_tags wagtailcore_tags wagtailuserbar wagtailmarkdown %}
+<html>
+	<head>
+		<title>DEBUG - Elements</title>
+		<meta charset="utf-8" />
+        {% if page.search_description %}
+        <meta name="description" content="{{ page.search_description }}" />
+        {% endif %}
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+        {# Force all links in the live preview panel to be opened in a new tab #}
+        {% if request.in_preview_panel %}
+        <base target="_blank">
+        {% endif %}
+
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/main.css' %}" />
+		<noscript>
+			<link rel="stylesheet" type="text/css" href="{% static 'assets/css/noscript.css' %}" />
+		</noscript>
+        {% block extra_css %}
+        {# Override this in templates to add extra stylesheets #}
+        {% endblock %}
+	</head>
+	<body class="is-preload {% block body_class %}{% endblock %}">
+
+		<!-- Header -->
+		<header id="header">
+			{% include "includes/navbar.html" %}
+		</header>
+
+		<!-- Main -->
+		<section id="main" class="wrapper">
+			<div class="inner">
+
+				<!-- Content Header -->
+				<header class="major">
+					<h2>Terms &amp; Conditions</h2>
+					<p class="metadata">
+						<span class="icon solid fa-calendar-alt"></span><span class="date">Jan 1, 2024</span>
+					</p>
+				</header>
+
+				<!-- Content -->
+				<div class="content">
+					<p>Please read these terms and conditions ("terms", "terms and conditions") carefully before using the "carolinamodelrr.org" website (the "service") operated by Carolina Model Railroaders, Inc. ("us", 'we", "our").</p>
+
+					<h3>Conditions of Use</h3>
+					<p>We will provide our services to you, which are subject to the conditions stated below in this document. Every time you visit this website, use its services or make a purchase, you accept the following conditions. This is why we urge you to read them carefully.</p>
+
+					<h3>Privacy Policy</h3>
+					<p>Before you continue using our website we advise you to read our privacy policy regarding our user data collection. It will help you better understand our practices.</p>
+
+					<h3>Copyright</h3>
+					<p>Content published on this website (digital downloads, images, texts, graphics, logos) is the property of Carolina Model Railroaders, Inc. and/or its content creators and protected by international copyright laws. The entire compilation of the content found on this website is the exclusive property of Carolina Model Railroaders, Inc., with copyright authorship for this compilation by Carolina Model Railroaders, Inc..</p>
+
+					<h3>Communications</h3>
+					<p>The entire communication with us is electronic. Every time you send us an email or visit our website, you are going to be communicating with us. You hereby consent to receive communications from us. If you subscribe to the news on our website, you are going to receive regular emails from us. We will continue to communicate with you by posting news and notices on our website and by sending you emails. You also agree that all notices, disclosures, agreements and other communications we provide to you electronically meet the legal requirements that such communications be in writing.</p>
+
+					<h3>Applicable Law</h3>
+					<p>By visiting this website, you agree that the laws of the state of North Carolina, United States of America, without regard to principles of conflict of laws, will govern these Conditions of Use and any dispute of any sort that might arise between you and us or our associates.</p>
+
+					<h3>Disputes</h3>
+					<p>Any dispute relating in any way to your visit to this website or to products or services you purchase through this website shall be submitted to confidential arbitration in North Carolina, United States of America, except that, to the extent you have in any manner violated or threatened to violate our intellectual property rights, we may seek injunctive or other appropriate relief in any state or federal court in the state of North Carolina, United States of America, and you consent to exclusive jurisdiction and venue in such courts. Arbitration under this agreement shall be conducted under the rules then prevailing of the American Arbitration Association. The arbitrators award shall be binding and may be entered as a judgment in any court of competent jurisdiction. To the fullest extent permitted by applicable law, no arbitration under this Agreement shall be joined to an arbitration involving any other party subject to this Agreement, whether through class arbitration proceedings or otherwise.</p>
+
+					<h3>Comments, Reviews, and Emails</h3>
+					<p>Visitors may post content as long as it is not obscene, illegal, defamatory, threatening, infringing of intellectual property rights, invasive of privacy or injurious in any other way to third parties. Content has to be free of software viruses, political campaign, and commercial solicitation.</p>
+					<p>We reserve all rights (but not the obligation) to remove and/or edit such content. When you post your content, you grant us non-exclusive, royalty-free and irrevocable right to use, reproduce, publish, modify such content throughout the world in any media.</p>
+
+					<h3>License and Site Access</h3>
+					<p>We grant you a limited license to access and make personal use of this website. You are not allowed to download or modify it. This may be done only with written consent from us.</p>
+
+					<h3>User Account</h3>
+					<p>If you are an owner of an account on this website, you are solely responsible for maintaining the confidentiality of your private user details (username and password). You are responsible for all activities that occur under your account or password.</p>
+					<p>We reserve all rights to terminate accounts, edit or remove content and cancel orders in their sole discretion.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Footer -->
+		{% include "debug/theme-footer.html" %}
+
+		<!-- Scripts -->
+		<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+		<script src="{% static 'assets/js/jquery.dropotron.min.js' %}"></script>
+		<script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+		<script src="{% static 'assets/js/browser.min.js' %}"></script>
+		<script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+		<script src="{% static 'assets/js/util.js' %}"></script>
+		<script src="{% static 'assets/js/main.js' %}"></script>
+        {% block extra_js %}
+        {# Override this in templates to add extra javascript #}
+        {% endblock %}
+	</body>
+</html>

@@ -1,54 +1,169 @@
-from wagtail.admin.panels import FieldPanel
-from wagtail.fields import RichTextField
-from wagtail.models import Page
+from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+from modelcluster.fields import ParentalKey
+
+from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel, PageChooserPanel
+from wagtail.models import Page, Orderable
+
+from base.models import BannerImage
+from blog.models import BlogPage, BlogMDPage
+from sections.models import SectionPage, SectionMDPage
 
 
+# ---------------------------------------------------------
+#         C O R E   H E L P E R   C L A S S E S
+# ---------------------------------------------------------
+
+
+# ---------------------------------------------------------
+#           C O R E   P A G E   M O D E L S
+# ---------------------------------------------------------
+# Home Page model
+#
+# NOTE: The home page is specail in that it does not have any content of its own
+#       and only aggregates content from other sections.
 class HomePage(Page):
-    body = RichTextField(blank=True)
+    # --------------------------------
+    # Database fields
+    # --------------------------------
+    # Show promoted content on home page?
+    show_promo = models.BooleanField(
+        default=False,
+        verbose_name='Show promoted',
+        help_text='Show promoted content on home page?',
+    )
+    promoted_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Promoted content',
+        help_text='Select content to promote on home page',
+    )
 
+    # Show events and newsletter sign-up on home page?
+    show_happening = models.BooleanField(
+        default=False,
+        verbose_name='Show events',
+        help_text='Show upcoming events, shows, etc. on home page?',
+    )
+    show_newsletter = models.BooleanField(
+        default=False,
+        verbose_name='Show newsletter',
+        help_text='Show newsletter sign-up on home page?',
+    )
+
+    # Show recent content on home page?
+    show_recent = models.BooleanField(
+        default=False,
+        verbose_name='Show recent',
+        help_text='Show recent content on home page?',
+    )
+    max_recent = models.IntegerField(
+        default=6,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(12),
+        ],
+        verbose_name='Max recent',
+        help_text='Maximum recent items to show on home page',
+    )
+
+    # Show contact form and social media section?
+    show_contact_info = models.BooleanField(
+        default=True,
+        verbose_name='Show contact info',
+        help_text='Show content form and social media links on home page?',
+    )
+
+    # --------------------------------
+    # Editor panels configuration
+    # --------------------------------
     content_panels = Page.content_panels + [
-        FieldPanel('body'),
+        InlinePanel('banner_slides', label='Banner slides'),
+        MultiFieldPanel(
+            [
+                FieldPanel('show_promo'),
+                PageChooserPanel('promoted_page', 'sections.SectionPage'),
+            ],
+            heading='Promoted content',
+        ),
+        InlinePanel('event_items', label='Event items'),
+        MultiFieldPanel(
+            [
+                FieldPanel('show_happening'),
+                FieldPanel('show_newsletter'),
+            ],
+            heading='Events and newsletter sign-up',
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel('show_recent'),
+                FieldPanel('max_recent'),
+            ],
+            heading='Recent content',
+        ),
+        FieldPanel('show_contact_info'),
     ]
-    # image = models.ForeignKey(
-    #     "wagtailimages.Image",
-    #     null=True,
-    #     blank=True,
-    #     on_delete=models.SET_NULL,
-    #     related_name="+",
-    #     help_text="Homepage image",
-    # )
-    # hero_text = models.CharField(
-    #     blank=True,
-    #     max_length=255, help_text="Write an introduction for the site"
-    # )
-    # hero_cta = models.CharField(
-    #     blank=True,
-    #     verbose_name="Hero CTA",
-    #     max_length=255,
-    #     help_text="Text to display on Call to Action",
-    # )
-    # hero_cta_link = models.ForeignKey(
-    #     "wagtailcore.Page",
-    #     null=True,
-    #     blank=True,
-    #     on_delete=models.SET_NULL,
-    #     related_name="+",
-    #     verbose_name="Hero CTA link",
-    #     help_text="Choose a page to link to for the Call to Action",
-    # )
 
-    # body = RichTextField(blank=True)
+    # promote_panels = []
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
+    ]
 
-    # # modify your content_panels:
-    # content_panels = Page.content_panels + [
-    #     MultiFieldPanel(
-    #         [
-    #             FieldPanel("image"),
-    #             FieldPanel("hero_text"),
-    #             FieldPanel("hero_cta"),
-    #             FieldPanel("hero_cta_link"),
-    #         ],
-    #         heading="Hero section",
-    #     ),
-    #     FieldPanel('body'),
-    # ]
+    # --------------------------------
+    # Parent page / subpage type rules
+    # --------------------------------
+    parent_page_types = ['wagtailcore.Page']
+    subpage_types = [
+        'sections.SectionMain',
+        'blog.BlogMain',
+        'base.StandardPage',
+        'base.StandardMDPage',
+    ]
+
+    # --------------------------------
+    # Misc fields, helpers, and custom methods
+    # --------------------------------
+    page_description = 'Use this content type for the home page.'
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+
+        # Add extra variables and return updated context
+        context['is_home'] = True
+
+        context['recent_posts'] = (
+            self.get_descendents()
+            .type(SectionPage, SectionMDPage, BlogPage, BlogMDPage)
+            .live()
+            .order_by('-first_published_at')
+        )
+
+        return context
+
+
+# -------------------------------------
+#     S U P P O R T   M O D E L S
+# -------------------------------------
+# Home Page Banner Slides
+class BannerSlide(Orderable, BannerImage):
+    page = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='banner_slides')
+
+
+# HomePage Event model
+class EventItem(Orderable):
+    page = ParentalKey(HomePage, on_delete=models.CASCADE, related_name='event_items')
+    event = models.ForeignKey(
+        'wagtailcore.Page',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='Promoted event',
+        help_text='Select event item to promote on home page',
+    )
+
+    panels = [
+        PageChooserPanel('event', 'sections.SectionPage'),
+    ]

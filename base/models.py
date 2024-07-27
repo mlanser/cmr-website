@@ -1,31 +1,68 @@
 from django.db import models
+from django.conf import settings
+from django.contrib.contenttypes.fields import GenericRelation
+from django.db import models
+from django.utils.translation import gettext as _
+
+from modelcluster.fields import ParentalKey
+from modelcluster.models import ClusterableModel
 from phonenumber_field.modelfields import PhoneNumberField
-from wagtail.admin.panels import FieldPanel, MultiFieldPanel, PublishingPanel
-from wagtail.contrib.settings.models import BaseGenericSetting, register_setting
-from wagtail.fields import RichTextField
-from wagtail.models import DraftStateMixin, PreviewableMixin, RevisionMixin, TranslatableMixin
+
 from wagtail.snippets.models import register_snippet
+from wagtail.admin.panels import (
+    FieldPanel,
+    FieldRowPanel,
+    InlinePanel,
+    MultiFieldPanel,
+    PageChooserPanel,
+    PublishingPanel,
+)
+from wagtail.contrib.forms.models import AbstractEmailForm, AbstractFormField
+from wagtail.contrib.forms.panels import FormSubmissionsPanel
+
+from wagtail.contrib.settings.models import (
+    BaseGenericSetting,
+    BaseSiteSetting,
+    register_setting,
+)
+from wagtail.fields import RichTextField, StreamField
+from wagtail.models import (
+    Collection,
+    DraftStateMixin,
+    LockableMixin,
+    Page,
+    PreviewableMixin,
+    RevisionMixin,
+    Task,
+    TaskState,
+    TranslatableMixin,
+    WorkflowMixin,
+)
+from wagtail.search import index
+
+from base.blocks import BaseStreamBlock
+from sections.blocks import SectionPageStreamBlock
 
 
 @register_setting
 class ContactSettings(BaseGenericSetting):
     email_cmr = models.EmailField(
-        help_text='Email address for CMR', verbose_name='CMR Email', blank=True
+        help_text='Email address for CMR', verbose_name='CMR email', blank=True
     )
     email_nrhs = models.EmailField(
-        help_text='Email address for NRHS', verbose_name='NRHS Email', blank=True
+        help_text='Email address for NRHS', verbose_name='NRHS email', blank=True
     )
     phone_cmr = PhoneNumberField(
-        help_text='Phone number for CMR', verbose_name='CMR Phone', blank=True
+        help_text='Phone number for CMR', verbose_name='CMR phone', blank=True
     )
     phone_nrhs = PhoneNumberField(
-        help_text='Phone number for NRHS', verbose_name='NRHS Phone', blank=True
+        help_text='Phone number for NRHS', verbose_name='NRHS phone', blank=True
     )
     address_cmr = models.TextField(
-        help_text='Mailing address for CMR.', verbose_name='CMR Mailing Address', blank=True
+        help_text='Mailing address for CMR.', verbose_name='CMR mailing address', blank=True
     )
     address_nrhs = models.TextField(
-        help_text='Mailing address for NRHS.', verbose_name='NRHS Mailing Address', blank=True
+        help_text='Mailing address for NRHS.', verbose_name='NRHS mailing address', blank=True
     )
     youtube = models.CharField(
         help_text='Youtube channel name without @ symbol. Example: cmr_railway.',
@@ -39,63 +76,94 @@ class ContactSettings(BaseGenericSetting):
         max_length=30,
         blank=True,
     )
-    visit_addr = RichTextField(
+    visit_addr = models.TextField(
         help_text='Visiting address for CMR layout and NRHS exhibits.',
-        verbose_name='Visiting Address',
+        verbose_name='Visiting address',
         blank=True,
     )
-    visit_hours_MON = models.CharField(
+    visit_map_link = models.URLField(
+        help_text='Map link for visiting address.',
+        verbose_name='Map link',
+        blank=True,
+    )
+    open_MON = models.CharField(
+        default='',
         help_text='Visiting hours on Modays. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='MON',
         max_length=10,
         blank=True,
     )
-    visit_hours_MON = models.CharField(
-        help_text='Visiting hours on Monday. Leave blank if not open to public. Example: 10A - 5P.',
-        verbose_name='MON',
-        max_length=10,
-        blank=True,
-    )
-    visit_hours_TUE = models.CharField(
+    open_TUE = models.CharField(
+        default='',
         help_text='Visiting hours on Tuesday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='TUE',
         max_length=10,
         blank=True,
     )
-    visit_hours_WED = models.CharField(
+    open_WED = models.CharField(
+        default='',
         help_text='Visiting hours on Wednesday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='WED',
         max_length=10,
         blank=True,
     )
-    visit_hours_THU = models.CharField(
+    open_THU = models.CharField(
+        default='7P - 9P',
         help_text='Visiting hours on Thursday.Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='THU',
         max_length=10,
         blank=True,
     )
-    visit_hours_FRI = models.CharField(
+    open_FRI = models.CharField(
+        default='',
         help_text='Visiting hours on Friday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='FRI',
         max_length=10,
         blank=True,
     )
-    visit_hours_SAT = models.CharField(
+    open_SAT = models.CharField(
+        default='10A - 5P',
         help_text='Visiting hours on Saturday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='SAT',
         max_length=10,
         blank=True,
     )
-    visit_hours_SUN = models.CharField(
+    open_SUN = models.CharField(
+        default='2P - 5P',
         help_text='Visiting hours on Sunday. Leave blank if not open to public. Example: 10A - 5P.',
         verbose_name='SUN',
         max_length=10,
         blank=True,
     )
-    visit_hours_holidays = models.CharField(
+    open_holidays = models.CharField(
+        default='Holiday hours may differ.',
         help_text="Exceptions for holidays. Example: 'Holiday hours may differ.'",
         verbose_name='Holidays',
         max_length=30,
+        blank=True,
+    )
+
+    terms_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='T&Cs page',
+        help_text='Select T&Cs page for links in footer.',
+    )
+    privacy_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Privacy page',
+        help_text='Select privacy page for links in footer.',
+    )
+    rss_link = models.URLField(
+        help_text='Link for RSS feed.',
+        verbose_name='RSS link',
         blank=True,
     )
 
@@ -111,34 +179,55 @@ class ContactSettings(BaseGenericSetting):
                 FieldPanel('youtube'),
                 FieldPanel('instagram'),
                 FieldPanel('visit_addr'),
+                FieldPanel('visit_map_link'),
             ],
             'Contact Settings',
         ),
         MultiFieldPanel(
             [
-                FieldPanel('visit_hours_MON'),
-                FieldPanel('visit_hours_TUE'),
-                FieldPanel('visit_hours_WED'),
-                FieldPanel('visit_hours_THU'),
-                FieldPanel('visit_hours_FRI'),
-                FieldPanel('visit_hours_SAT'),
-                FieldPanel('visit_hours_SUN'),
-                FieldPanel('visit_hours_holidays'),
+                FieldPanel('open_MON'),
+                FieldPanel('open_TUE'),
+                FieldPanel('open_WED'),
+                FieldPanel('open_THU'),
+                FieldPanel('open_FRI'),
+                FieldPanel('open_SAT'),
+                FieldPanel('open_SUN'),
+                FieldPanel('open_holidays'),
             ],
             'Visiting Hours',
+        ),
+        MultiFieldPanel(
+            [
+                PageChooserPanel('terms_page', 'base.StandardMDPage'),
+                PageChooserPanel('privacy_page', 'base.StandardMDPage'),
+                FieldPanel('rss_link'),
+            ],
+            'Links to T&Cs and RSS feed',
         ),
     ]
 
 
-@register_snippet
-class FooterText(
+class CopyrightText(
     DraftStateMixin,
     RevisionMixin,
     PreviewableMixin,
     TranslatableMixin,
     models.Model,
 ):
-    body = RichTextField()
+    """
+    TBD
+    """
+    body = models.TextField(
+        help_text='Copyright text to display in the footer.',
+    )
+
+    revisions = GenericRelation(
+        "wagtailcore.Revision",
+        content_type_field="base_content_type",
+        object_id_field="object_id",
+        related_query_name="copyright_text",
+        for_concrete_model=False,
+    )
 
     panels = [
         FieldPanel('body'),
@@ -146,32 +235,742 @@ class FooterText(
     ]
 
     def __str__(self):
-        return 'Footer text'
+        return 'Copyright text'
 
     def get_preview_template(self, request, mode_name):
         return 'base.html'
 
     def get_preview_context(self, request, mode_name):
-        return {'footer_text': self.body}
+        return {'copyright_text': self.body}
 
     class Meta(TranslatableMixin.Meta):
-        verbose_name_plural = 'Footer Text'
+        verbose_name = 'Copyright text'
+        verbose_name_plural = 'Copyright text'
 
 
-@register_snippet
-class Author(models.Model):
+class FooterText(
+    DraftStateMixin,
+    RevisionMixin,
+    PreviewableMixin,
+    TranslatableMixin,
+    models.Model,
+):
+    """
+    This provides editable text for the site footer. Again it is registered
+    using `register_snippet` as a function in wagtail_hooks.py to be grouped
+    together with the Person model inside the same main menu item. It is made
+    accessible on the template via a template tag defined in base/templatetags/
+    navigation_tags.py
+    """
+
+    body = RichTextField()
+
+    revisions = GenericRelation(
+        "wagtailcore.Revision",
+        content_type_field="base_content_type",
+        object_id_field="object_id",
+        related_query_name="footer_text",
+        for_concrete_model=False,
+    )
+
+    panels = [
+        FieldPanel("body"),
+        PublishingPanel(),
+    ]
+
+    def __str__(self):
+        return "Footer text"
+
+    def get_preview_template(self, request, mode_name):
+        return "base.html"
+
+    def get_preview_context(self, request, mode_name):
+        return {"footer_text": self.body}
+
+    class Meta(TranslatableMixin.Meta):
+        verbose_name = "Footer text"
+        verbose_name_plural = "Footer text"
+
+
+class Author(
+    WorkflowMixin,
+    DraftStateMixin,
+    LockableMixin,
+    RevisionMixin,
+    PreviewableMixin,
+    index.Indexed,
+    ClusterableModel,
+):
     name = models.CharField(max_length=255)
-    author_image = models.ForeignKey(
-        'wagtailimages.Image', null=True, blank=True, on_delete=models.SET_NULL, related_name='+'
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Author image',
+        help_text='Use image ratio 1:1 and max size 800x800 px.',
     )
 
     panels = [
         FieldPanel('name'),
-        FieldPanel('author_image'),
+        FieldPanel('image'),
     ]
 
     def __str__(self):
         return self.name
 
     class Meta:
+        verbose_name = 'Author'
         verbose_name_plural = 'Authors'
+
+
+class Sponsor(
+    WorkflowMixin,
+    DraftStateMixin,
+    LockableMixin,
+    RevisionMixin,
+    PreviewableMixin,
+    index.Indexed,
+    ClusterableModel,
+):
+    name = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Sponsor image',
+        help_text='Use image ratio 1:1 and max size 800x800 px.',
+    )
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('image'),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'Sponsors'
+
+
+class Organizer(
+    WorkflowMixin,
+    DraftStateMixin,
+    LockableMixin,
+    RevisionMixin,
+    PreviewableMixin,
+    index.Indexed,
+    ClusterableModel,
+):
+    name = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Organizer image',
+        help_text='Use image ratio 1:1 and max size 800x800 px.',
+    )
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('image'),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'Organizers'
+
+
+@register_snippet
+class Location(models.Model):
+    # TODO: Move to separate app/model
+    name = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Location image',
+        help_text='Use image ratio 1:1 and max size 800x800 px.',
+    )
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('image'),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = 'Locations'
+
+
+class ContactField(AbstractFormField):
+    page = ParentalKey('ContactForm', on_delete=models.CASCADE, related_name='contact_fields')
+
+
+class ContactForm(AbstractEmailForm):
+    intro = RichTextField(blank=True)
+    thank_you_text = RichTextField(blank=True)
+
+    content_panels = AbstractEmailForm.content_panels + [
+        FormSubmissionsPanel(),
+        FieldPanel('intro'),
+        InlinePanel('contact_fields', label='Contact Form fields'),
+        FieldPanel('thank_you_text'),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel('from_address'),
+                        FieldPanel('to_address'),
+                    ]
+                ),
+                FieldPanel('subject'),
+            ],
+            'Email',
+        ),
+    ]
+
+
+class Person(
+    WorkflowMixin,
+    DraftStateMixin,
+    LockableMixin,
+    RevisionMixin,
+    PreviewableMixin,
+    index.Indexed,
+    ClusterableModel,
+):
+    """
+    A Django model to store Person objects.
+    It is registered using `register_snippet` as a function in wagtail_hooks.py
+    to allow it to have a menu item within a custom menu item group.
+
+    `Person` uses the `ClusterableModel`, which allows the relationship with
+    another model to be stored locally to the 'parent' model (e.g. a PageModel)
+    until the parent is explicitly saved. This allows the editor to use the
+    'Preview' button, to preview the content, without saving the relationships
+    to the database.
+    https://github.com/wagtail/django-modelcluster
+    """
+
+    first_name = models.CharField("First name", max_length=254)
+    last_name = models.CharField("Last name", max_length=254)
+    job_title = models.CharField("Job title", max_length=254)
+
+    image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    workflow_states = GenericRelation(
+        "wagtailcore.WorkflowState",
+        content_type_field="base_content_type",
+        object_id_field="object_id",
+        related_query_name="person",
+        for_concrete_model=False,
+    )
+
+    revisions = GenericRelation(
+        "wagtailcore.Revision",
+        content_type_field="base_content_type",
+        object_id_field="object_id",
+        related_query_name="person",
+        for_concrete_model=False,
+    )
+
+    panels = [
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel("first_name"),
+                        FieldPanel("last_name"),
+                    ]
+                )
+            ],
+            "Name",
+        ),
+        FieldPanel("job_title"),
+        FieldPanel("image"),
+        PublishingPanel(),
+    ]
+
+    search_fields = [
+        index.SearchField("first_name"),
+        index.SearchField("last_name"),
+        index.FilterField("job_title"),
+        index.AutocompleteField("first_name"),
+        index.AutocompleteField("last_name"),
+    ]
+
+    @property
+    def thumb_image(self):
+        # Returns an empty string if there is no profile pic or the rendition
+        # file can't be found.
+        try:
+            return self.image.get_rendition("fill-50x50").img_tag()
+        except Exception:
+            return ""
+
+    @property
+    def preview_modes(self):
+        return PreviewableMixin.DEFAULT_PREVIEW_MODES + [("blog_post", _("Blog post"))]
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+    def get_preview_template(self, request, mode_name):
+        from bakerydemo.blog.models import BlogPage
+
+        if mode_name == "blog_post":
+            return BlogPage.template
+        return "base/preview/person.html"
+
+    def get_preview_context(self, request, mode_name):
+        from bakerydemo.blog.models import BlogPage
+
+        context = super().get_preview_context(request, mode_name)
+        if mode_name == self.default_preview_mode:
+            return context
+
+        page = BlogPage.objects.filter(blog_person_relationship__person=self).first()
+        if page:
+            # Use the page authored by this person if available,
+            # and replace the instance from the database with the edited instance
+            page.authors = [
+                self if author.pk == self.pk else author for author in page.authors()
+            ]
+            # The authors() method only shows live authors, so make sure the instance
+            # is included even if it's not live as this is just a preview
+            if not self.live:
+                page.authors.append(self)
+        else:
+            # Otherwise, get the first page and simulate the person as the author
+            page = BlogPage.objects.first()
+            page.authors = [self]
+
+        context["page"] = page
+        return context
+
+    class Meta:
+        verbose_name = "Person"
+        verbose_name_plural = "People"
+
+
+class StandardPage(Page):
+    """
+    Plain standard page without banner or header sections
+
+    This is a simple page with a basic fields (e.g. title, body, etc.) 
+    and it's best used for pages such as T&C, etc.
+    """
+
+    # Database fields
+    intro = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Landscape mode only; horizontal width between 1000px and 3000px.",
+    )
+    body = RichTextField(
+        blank=True,
+        help_text='Create a plain page without sidebar using RichText format.',
+    )
+
+    # Search index configuration
+    search_fields = Page.search_fields + [
+        index.SearchField('body'),
+        index.SearchField('intro'),
+    ]
+
+    # Editor panels configuration
+    content_panels = Page.content_panels + [
+        FieldPanel('intro'),
+        FieldPanel('body'),
+        FieldPanel("image"),
+    ]
+
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
+    ]
+
+    # Parent page / subpage type rules
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+
+    # Misc fields, helpers, and custom methods
+    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
+    template = 'base/standard_page.html'
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+
+        context['show_meta'] = True
+        context['show_intro'] = False
+        context['is_richtext'] = True
+        return context
+
+
+class StandardMDPage(Page):
+    # Database fields
+    intro = models.CharField(max_length=255)
+    body = StreamField(
+        SectionPageStreamBlock(),
+        blank=True,
+        use_json_field=True,
+        help_text='Create a plain page without sidebar using Markdown format.',
+    )
+
+    # Search index configuration
+    search_fields = Page.search_fields + [
+        index.SearchField('body'),
+        index.SearchField('intro'),
+    ]
+
+    # Editor panels configuration
+    content_panels = Page.content_panels + [
+        FieldPanel('intro'),
+        FieldPanel('body'),
+    ]
+
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
+    ]
+
+    # Parent page / subpage type rules
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+
+    # Misc fields, helpers, and custom methods
+    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
+    template = 'base/standard_page.html'
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+
+        context['show_meta'] = True
+        context['show_intro'] = False
+        context['is_markdown'] = True
+        return context
+
+
+# Advert model
+class Advert(PreviewableMixin, index.Indexed, models.Model):
+    url = models.URLField(null=True, blank=True)
+    text = models.CharField(max_length=255)
+    image = models.ForeignKey('wagtailimages.Image', on_delete=models.CASCADE, related_name='+')
+
+    panels = [
+        FieldPanel('url'),
+        FieldPanel('text'),
+        FieldPanel('image'),
+    ]
+
+    search_fields = [
+        index.SearchField('text'),
+        index.AutocompleteField('text'),
+    ]
+
+    def __str__(self):
+        return self.text
+
+    @property
+    def preview_modes(self):
+        return PreviewableMixin.DEFAULT_PREVIEW_MODES + [('alt', 'Alternate')]
+
+    def get_preview_template(self, request, mode_name):
+        templates = {
+            '': 'base/previews/advert.html',  # Default preview mode
+            'alt': 'base/previews/advert_alt.html',  # Alternate preview mode
+        }
+        return templates.get(mode_name, templates[''])
+
+    def get_preview_context(self, request, mode_name):
+        context = super().get_preview_context(request, mode_name)
+        if mode_name == 'alt':
+            context['extra_context'] = 'Alternate preview mode'
+        return context
+
+
+# Related Links - abstract model
+class RelatedLink(models.Model):
+    name = models.CharField(max_length=255)
+    url = models.URLField()
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('url'),
+    ]
+
+    class Meta:
+        abstract = True
+
+
+# Gallery Images
+class GalleryImage(models.Model):
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='Gallery image',
+        help_text='Use image ratio 3:2 and max size 1200 x 800 px.',
+    )
+    caption = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Image caption',
+        help_text='Text is used as ALT text for the image.',
+    )
+    credit_text = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Image credit',
+        help_text='Image credits display below image.',
+    )
+    credit_url = models.URLField(
+        blank=True, verbose_name='Credit URL', help_text='URL for image credits.'
+    )
+
+    panels = [
+        FieldPanel('image'),
+        FieldPanel('caption'),  # ALT text
+        FieldPanel('credit_text'),
+        FieldPanel('credit_url'),
+    ]
+
+    class Meta:
+        abstract = True
+
+
+# Banner Images
+class BannerImage(models.Model):
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Banner image',
+        help_text='Use image ratio 20:9 and max size 2000 x 900 px',
+    )
+    caption = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Banner text',
+        help_text='Optional text to display on the banner image',
+    )
+    credit_text = models.CharField(
+        blank=True,
+        max_length=255,
+        verbose_name='Image credit',
+        help_text='Image credits display below image.',
+    )
+    credit_url = models.URLField(
+        blank=True, verbose_name='Credit URL', help_text='URL for image credits.'
+    )
+
+    panels = [
+        FieldPanel('image'),
+        FieldPanel('caption'),  # ALT text
+        FieldPanel('credit_text'),
+        FieldPanel('credit_url'),
+    ]
+
+    class Meta:
+        abstract = True
+
+
+class GalleryPage(Page):
+    """
+    This is a page to list locations from the selected Collection. We use a Q
+    object to list any Collection created (/admin/collections/) even if they
+    contain no items. In this demo we use it for a GalleryPage,
+    and is intended to show the extensibility of this aspect of Wagtail
+    """
+
+    introduction = models.TextField(help_text="Text to describe the page", blank=True)
+    image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Landscape mode only; horizontal width between 1000px and " "3000px.",
+    )
+    body = StreamField(
+        BaseStreamBlock(), verbose_name="Page body", blank=True, use_json_field=True
+    )
+    collection = models.ForeignKey(
+        Collection,
+        limit_choices_to=~models.Q(name__in=["Root"]),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text="Select the image collection for this gallery.",
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("introduction"),
+        FieldPanel("body"),
+        FieldPanel("image"),
+        FieldPanel("collection"),
+    ]
+
+    # Defining what content type can sit under the parent. Since it's a blank
+    # array no subpage can be added
+    subpage_types = []
+
+
+class FormField(AbstractFormField):
+    """
+    Wagtailforms is a module to introduce simple forms on a Wagtail site. It
+    isn't intended as a replacement to Django's form support but as a quick way
+    to generate a general purpose data-collection form or contact form
+    without having to write code. We use it on the site for a contact form. You
+    can read more about Wagtail forms at:
+    https://docs.wagtail.org/en/stable/reference/contrib/forms/index.html
+    """
+
+    page = ParentalKey("FormPage", related_name="form_fields", on_delete=models.CASCADE)
+
+
+class FormPage(AbstractEmailForm):
+    image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    body = StreamField(BaseStreamBlock(), use_json_field=True)
+    thank_you_text = RichTextField(blank=True)
+
+    # Note how we include the FormField object via an InlinePanel using the
+    # related_name value
+    content_panels = AbstractEmailForm.content_panels + [
+        FieldPanel("image"),
+        FieldPanel("body"),
+        InlinePanel("form_fields", heading="Form fields", label="Field"),
+        FieldPanel("thank_you_text"),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel("from_address"),
+                        FieldPanel("to_address"),
+                    ]
+                ),
+                FieldPanel("subject"),
+            ],
+            "Email",
+        ),
+    ]
+
+
+@register_setting(icon="cog")
+class GenericSettings(ClusterableModel, BaseGenericSetting):
+    twitter_url = models.URLField(verbose_name="Twitter URL", blank=True)
+    github_url = models.URLField(verbose_name="GitHub URL", blank=True)
+    organisation_url = models.URLField(verbose_name="Organisation URL", blank=True)
+
+    panels = [
+        MultiFieldPanel(
+            [
+                FieldPanel("github_url"),
+                FieldPanel("twitter_url"),
+                FieldPanel("organisation_url"),
+            ],
+            "Social settings",
+        )
+    ]
+
+
+@register_setting(icon="site")
+class SiteSettings(BaseSiteSetting):
+    title_suffix = models.CharField(
+        verbose_name="Title suffix",
+        max_length=255,
+        help_text="The suffix for the title meta tag e.g. ' | The Wagtail Bakery'",
+        default="The Wagtail Bakery",
+    )
+
+    panels = [
+        FieldPanel("title_suffix"),
+    ]
+
+
+class UserApprovalTaskState(TaskState):
+    pass
+
+
+class UserApprovalTask(Task):
+    """
+    Based on https://docs.wagtail.org/en/stable/extending/custom_tasks.html.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=False
+    )
+
+    admin_form_fields = Task.admin_form_fields + ["user"]
+
+    task_state_class = UserApprovalTaskState
+
+    # prevent editing of `user` after the task is created
+    # by default, this attribute contains the 'name' field to prevent tasks from being renamed
+    admin_form_readonly_on_edit_fields = Task.admin_form_readonly_on_edit_fields + [
+        "user"
+    ]
+
+    def user_can_access_editor(self, page, user):
+        return user == self.user
+
+    def page_locked_for_user(self, page, user):
+        return user != self.user
+
+    def get_actions(self, page, user):
+        if user == self.user:
+            return [
+                ("approve", "Approve", False),
+                ("reject", "Reject", False),
+                ("cancel", "Cancel", False),
+            ]
+        else:
+            return []
+
+    def on_action(self, task_state, user, action_name, **kwargs):
+        if action_name == "cancel":
+            return task_state.workflow_state.cancel(user=user)
+        else:
+            return super().on_action(task_state, user, action_name, **kwargs)
+
+    def get_task_states_user_can_moderate(self, user, **kwargs):
+        if user == self.user:
+            # get all task states linked to the (base class of) current task
+            return TaskState.objects.filter(
+                status=TaskState.STATUS_IN_PROGRESS, task=self.task_ptr
+            )
+        else:
+            return TaskState.objects.none()
+
+    @classmethod
+    def get_description(cls):
+        return _("Only a specific user can approve this task")

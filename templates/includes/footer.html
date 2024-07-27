@@ -1,0 +1,20 @@
+{% load copyright_tags footer_tags wagtailcore_tags %}
+<footer id="footer">
+	<div class="inner">
+		{% get_footer_text %}
+		{% get_copyright_text %}
+		{% if terms_page or privacy_page or rss_url %}
+		<ul class="menu">
+			{% if terms_page %}
+			<li><a href="{% pageurl terms_page %}">Terms<span> of Use</span></a></li>
+			{% endif %}
+			{% if privacy_page %}
+			<li><a href="{% pageurl privacy_page %}">Privacy<span> Policy</span></a></li>
+			{% endif %}
+			{% if rss_url %}
+			<li><a href="{{ rss_link }}">RSS</a></li>
+			{% endif %}
+		</ul>
+		{% endif %}
+	</div>
+</footer>

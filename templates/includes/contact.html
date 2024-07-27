@@ -26,8 +26,8 @@
 				</div>
 			</form>
 		</section>
-		{% with youtube=settings.base.ContactSettings.youtube instagram=settings.base.ContactSettings.instagram visit_addr=settings.base.ContactSettings.visit_addr visit_hours=settings.base.ContactSettings.visit_hours %}
-			{% if youtube or instagram or visit_addr %}
+		{% with youtube=settings.base.ContactSettings.youtube instagram=settings.base.ContactSettings.instagram addr=settings.base.ContactSettings.visit_addr map=settings.base.ContactSettings.visit_map_link mon=settings.base.ContactSettings.open_MON tue=settings.base.ContactSettings.open_TUE wed=settings.base.ContactSettings.open_WED thu=settings.base.ContactSettings.open_THU fri=settings.base.ContactSettings.open_fri sat=settings.base.ContactSettings.open_SAT sun=settings.base.ContactSettings.open_SUN holidays=settings.base.ContactSettings.open_holidays %}
+			{% if youtube or instagram or visit %}
 			<section>
 				<h2>Other ways to reach us</h2>
 				<ul class="bulleted-icons">
@@ -47,23 +47,23 @@
 					{% endif %}
 					{% if visit_addr %}
 					<li>
-						<span class="icon-wrapper"><span class="icon solid fa-building"></span></span>
-						<h3>Address</h3>
-						{{ visit_addr|linebreaks }}
+						<span class="icon-wrapper"><span class="icon solid fa-map-marker-alt"></span></span>
+						<h3>Club Location</h3>
+						<p>{% if map %}<a href="{{ map }}" target="_blank">{% endif %}{{ addr|linebreaks }}{% if map %}</a>{% endif %}</p>
 					</li>
 					{% endif %}
 					<li>
 						<span class="icon-wrapper"><span class="icon solid fa-clock"></span></span>
-						<h3>Hours</h3>
+						<h3>Open to Public</h3>
 						<p>
-							MON {{ if visit_hours_MON }}{{ visit_hours_MON }}{{ else }}Closed{{ endif }}<br />
-							TUE {{ if visit_hours_TUE }}{{ visit_hours_TUE }}{{ else }}Closed{{ endif }}<br />
-							WED {{ if visit_hours_WED }}{{ visit_hours_WED }}{{ else }}Closed{{ endif }}<br />
-							THU {{ if visit_hours_THU }}{{ visit_hours_THU }}{{ else }}Closed{{ endif }}<br />
-							FRI {{ if visit_hours_FRI }}{{ visit_hours_FRI }}{{ else }}Closed{{ endif }}<br />
-							SAT {{ if visit_hours_SAT }}{{ visit_hours_SAT }}{{ else }}Closed{{ endif }}<br />
-							SUN {{ if visit_hours_SUN }}{{ visit_hours_SUN }}{{ else }}Closed{{ endif }}<br />
-							<i>{{ if visit_hours_holidays }}{{ visit_hours_holidays }}{{ else }}Holiday hours may differ.{{ endif }}</i>
+							{% if mon %}<strong>MON {{ mon }}</strong>{% else %}MON <em>Closed</em>{% endif %}<br />
+							{% if tue %}<strong>TUE {{ tue }}</strong>{% else %}TUE <em>Closed</em>{% endif %}<br />
+							{% if wed %}<strong>WED {{ wed }}</strong>{% else %}WED <em>Closed</em>{% endif %}<br />
+							{% if thu %}<strong>THU {{ thu }}</strong>{% else %}THU <em>Closed</em>{% endif %}<br />
+							{% if fri %}<strong>FRI {{ fri }}</strong>{% else %}FRI <em>Closed</em>{% endif %}<br />
+							{% if sat %}<strong>SAT {{ sat }}</strong>{% else %}SAT <em>Closed</em>{% endif %}<br />
+							{% if sun %}<strong>SUN {{ sun }}</strong>{% else %}SUN <em>Closed</em>{% endif %}<br />
+							<em>{% if holidays %}{{ holidays }}{% else %}Holiday hours may differ.{% endif %}</em>
 						</p>
 					</li>
 				</ul>

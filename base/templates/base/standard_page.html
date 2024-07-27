@@ -1,0 +1,34 @@
+{% extends "base/main.html" %}
+
+{% load wagtailcore_tags wagtailimages_tags %}
+{% block body_class %}template-standard-page{% endblock %}
+
+{% block content %}
+<section id="main" class="wrapper">
+    <div class="inner">
+
+        <!-- Content Header -->
+        <header class="major">
+            <h2>{{ page.title }}</h2>
+            {% if show_meta %}
+            <p class="metadata">
+                <span class="icon solid fa-calendar-alt"></span><span class="date">{{ page.last_published_at }}</span>
+            </p>
+            {% endif %}
+            {% if show_intro %}
+            <p class="intro">{{ page.intro }}</p>
+            {% endif %}
+        </header>
+
+        <!-- Content -->
+        <div class="content">
+            {% if is_markdown %}
+            {{ page.body|markdown|safe }}
+            {% else %}
+            {{ page.body|richtext }}
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}

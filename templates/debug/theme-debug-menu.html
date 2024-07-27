@@ -1,0 +1,41 @@
+{% load static navigation_tags wagtailcore_tags %}
+<li>
+    <a href="#" class="submenu fa-angle-down">DEBUG MENU</a>
+    <ul>
+        <li><a href="{% url 'theme_home' %}">Theme - Home</a></li>
+        <li>
+            <a href="#">Blog Section</a>
+            <ul>
+                <li><a href="{% url 'theme_blog_main' %}">Theme - Blog Main</a></li>
+                <li><a href="{% url 'theme_blog_page' %}">Theme - Blog Content</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#">Content Sections</a>
+            <ul>
+                <li><a href="{% url 'theme_sctn_main' %}">Theme - Section Main</a></li>
+                <li><a href="{% url 'theme_sub_sctn_main' %}">Theme - Sub-Section Main</a></li>
+                <li><a href="{% url 'theme_sctn_page' %}">Theme - Section Content</a></li>
+                <li><a href="{% url 'theme_event_page' %}">Theme - Event Page</a></li>
+                <li><a href="{% url 'theme_show_page' %}">Theme - Show Page</a></li>
+                <li><a href="{% url 'theme_calendar_page' %}">Theme - Calendar Page</a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#">Misc. Pages</a>
+            <ul>
+                <li><a href="{% url 'theme_terms' %}">Theme - T&amp;C Page</a></li>
+                <li><a href="{% url 'theme_privacy' %}">Theme - Privacy Page</a></li>
+            </ul>
+        </li>
+        <li><a href="{% url 'theme_elements' %}">Theme - Elements</a></li>
+        <li>
+            <a href="#">Sample Submenu</a>
+            <ul>
+                <li><a href="#">L2 - AAA</a></li>
+                <li><a href="#">L2 - BBB</a></li>
+                <li><a href="#">L2 - CCC</a></li>
+            </ul>
+        </li>
+    </ul>
+</li>
