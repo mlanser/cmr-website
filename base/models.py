@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
-from django.db import models
 from django.utils.translation import gettext as _
 
 from modelcluster.fields import ParentalKey
@@ -41,11 +40,10 @@ from wagtail.models import (
 from wagtail.search import index
 
 from base.blocks import BaseStreamBlock
-from sections.blocks import SectionPageStreamBlock
 
 
-@register_setting
-class ContactSettings(BaseGenericSetting):
+@register_setting(icon='cog')
+class ContactSettings(ClusterableModel, BaseGenericSetting):
     email_cmr = models.EmailField(
         help_text='Email address for CMR', verbose_name='CMR email', blank=True
     )
@@ -76,6 +74,13 @@ class ContactSettings(BaseGenericSetting):
         max_length=30,
         blank=True,
     )
+    github = models.CharField(
+        help_text='Github username without @ symbol. Example: cmr_railway.',
+        verbose_name='Github',
+        max_length=30,
+        blank=True,
+    )
+
     visit_addr = models.TextField(
         help_text='Visiting address for CMR layout and NRHS exhibits.',
         verbose_name='Visiting address',
@@ -86,6 +91,7 @@ class ContactSettings(BaseGenericSetting):
         verbose_name='Map link',
         blank=True,
     )
+
     open_MON = models.CharField(
         default='',
         help_text='Visiting hours on Modays. Leave blank if not open to public. Example: 10A - 5P.',
@@ -178,6 +184,7 @@ class ContactSettings(BaseGenericSetting):
                 FieldPanel('address_nrhs'),
                 FieldPanel('youtube'),
                 FieldPanel('instagram'),
+                FieldPanel('github'),
                 FieldPanel('visit_addr'),
                 FieldPanel('visit_map_link'),
             ],
@@ -207,6 +214,38 @@ class ContactSettings(BaseGenericSetting):
     ]
 
 
+# @register_setting(icon="cog")
+# class GenericSettings(ClusterableModel, BaseGenericSetting):
+#     twitter_url = models.URLField(verbose_name="Twitter URL", blank=True)
+#     github_url = models.URLField(verbose_name="GitHub URL", blank=True)
+#     organisation_url = models.URLField(verbose_name="Organisation URL", blank=True)
+
+#     panels = [
+#         MultiFieldPanel(
+#             [
+#                 FieldPanel("github_url"),
+#                 FieldPanel("twitter_url"),
+#                 FieldPanel("organisation_url"),
+#             ],
+#             "Social settings",
+#         )
+#     ]
+
+
+@register_setting(icon='site')
+class SiteSettings(BaseSiteSetting):
+    title_suffix = models.CharField(
+        verbose_name='Title suffix',
+        max_length=255,
+        help_text="The suffix for the title meta tag e.g. ' | Carolina Model Railroaders'",
+        default='Carolina Model Railroaders',
+    )
+
+    panels = [
+        FieldPanel('title_suffix'),
+    ]
+
+
 class CopyrightText(
     DraftStateMixin,
     RevisionMixin,
@@ -217,15 +256,16 @@ class CopyrightText(
     """
     TBD
     """
+
     body = models.TextField(
         help_text='Copyright text to display in the footer.',
     )
 
     revisions = GenericRelation(
-        "wagtailcore.Revision",
-        content_type_field="base_content_type",
-        object_id_field="object_id",
-        related_query_name="copyright_text",
+        'wagtailcore.Revision',
+        content_type_field='base_content_type',
+        object_id_field='object_id',
+        related_query_name='copyright_text',
         for_concrete_model=False,
     )
 
@@ -266,30 +306,30 @@ class FooterText(
     body = RichTextField()
 
     revisions = GenericRelation(
-        "wagtailcore.Revision",
-        content_type_field="base_content_type",
-        object_id_field="object_id",
-        related_query_name="footer_text",
+        'wagtailcore.Revision',
+        content_type_field='base_content_type',
+        object_id_field='object_id',
+        related_query_name='footer_text',
         for_concrete_model=False,
     )
 
     panels = [
-        FieldPanel("body"),
+        FieldPanel('body'),
         PublishingPanel(),
     ]
 
     def __str__(self):
-        return "Footer text"
+        return 'Footer text'
 
     def get_preview_template(self, request, mode_name):
-        return "base.html"
+        return 'base.html'
 
     def get_preview_context(self, request, mode_name):
-        return {"footer_text": self.body}
+        return {'footer_text': self.body}
 
     class Meta(TranslatableMixin.Meta):
-        verbose_name = "Footer text"
-        verbose_name_plural = "Footer text"
+        verbose_name = 'Footer text'
+        verbose_name_plural = 'Footer text'
 
 
 class Author(
@@ -465,31 +505,31 @@ class Person(
     https://github.com/wagtail/django-modelcluster
     """
 
-    first_name = models.CharField("First name", max_length=254)
-    last_name = models.CharField("Last name", max_length=254)
-    job_title = models.CharField("Job title", max_length=254)
+    first_name = models.CharField('First name', max_length=254)
+    last_name = models.CharField('Last name', max_length=254)
+    job_title = models.CharField('Job title', max_length=254)
 
     image = models.ForeignKey(
-        "wagtailimages.Image",
+        'wagtailimages.Image',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="+",
+        related_name='+',
     )
 
     workflow_states = GenericRelation(
-        "wagtailcore.WorkflowState",
-        content_type_field="base_content_type",
-        object_id_field="object_id",
-        related_query_name="person",
+        'wagtailcore.WorkflowState',
+        content_type_field='base_content_type',
+        object_id_field='object_id',
+        related_query_name='person',
         for_concrete_model=False,
     )
 
     revisions = GenericRelation(
-        "wagtailcore.Revision",
-        content_type_field="base_content_type",
-        object_id_field="object_id",
-        related_query_name="person",
+        'wagtailcore.Revision',
+        content_type_field='base_content_type',
+        object_id_field='object_id',
+        related_query_name='person',
         for_concrete_model=False,
     )
 
@@ -498,24 +538,24 @@ class Person(
             [
                 FieldRowPanel(
                     [
-                        FieldPanel("first_name"),
-                        FieldPanel("last_name"),
+                        FieldPanel('first_name'),
+                        FieldPanel('last_name'),
                     ]
                 )
             ],
-            "Name",
+            'Name',
         ),
-        FieldPanel("job_title"),
-        FieldPanel("image"),
+        FieldPanel('job_title'),
+        FieldPanel('image'),
         PublishingPanel(),
     ]
 
     search_fields = [
-        index.SearchField("first_name"),
-        index.SearchField("last_name"),
-        index.FilterField("job_title"),
-        index.AutocompleteField("first_name"),
-        index.AutocompleteField("last_name"),
+        index.SearchField('first_name'),
+        index.SearchField('last_name'),
+        index.FilterField('job_title'),
+        index.AutocompleteField('first_name'),
+        index.AutocompleteField('last_name'),
     ]
 
     @property
@@ -523,23 +563,23 @@ class Person(
         # Returns an empty string if there is no profile pic or the rendition
         # file can't be found.
         try:
-            return self.image.get_rendition("fill-50x50").img_tag()
+            return self.image.get_rendition('fill-50x50').img_tag()
         except Exception:
-            return ""
+            return ''
 
     @property
     def preview_modes(self):
-        return PreviewableMixin.DEFAULT_PREVIEW_MODES + [("blog_post", _("Blog post"))]
+        return PreviewableMixin.DEFAULT_PREVIEW_MODES + [('blog_post', _('Blog post'))]
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f'{self.first_name} {self.last_name}'
 
     def get_preview_template(self, request, mode_name):
         from bakerydemo.blog.models import BlogPage
 
-        if mode_name == "blog_post":
+        if mode_name == 'blog_post':
             return BlogPage.template
-        return "base/preview/person.html"
+        return 'base/preview/person.html'
 
     def get_preview_context(self, request, mode_name):
         from bakerydemo.blog.models import BlogPage
@@ -552,9 +592,7 @@ class Person(
         if page:
             # Use the page authored by this person if available,
             # and replace the instance from the database with the edited instance
-            page.authors = [
-                self if author.pk == self.pk else author for author in page.authors()
-            ]
+            page.authors = [self if author.pk == self.pk else author for author in page.authors()]
             # The authors() method only shows live authors, so make sure the instance
             # is included even if it's not live as this is just a preview
             if not self.live:
@@ -564,31 +602,33 @@ class Person(
             page = BlogPage.objects.first()
             page.authors = [self]
 
-        context["page"] = page
+        context['page'] = page
         return context
 
     class Meta:
-        verbose_name = "Person"
-        verbose_name_plural = "People"
+        verbose_name = 'Person'
+        verbose_name_plural = 'People'
 
 
 class StandardPage(Page):
     """
+    Standard Page - RichText Format
+
     Plain standard page without banner or header sections
 
-    This is a simple page with a basic fields (e.g. title, body, etc.) 
+    This is a simple page with a basic fields (e.g. title, body, etc.)
     and it's best used for pages such as T&C, etc.
     """
 
     # Database fields
     intro = models.CharField(max_length=255)
     image = models.ForeignKey(
-        "wagtailimages.Image",
+        'wagtailimages.Image',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="+",
-        help_text="Landscape mode only; horizontal width between 1000px and 3000px.",
+        related_name='+',
+        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
     )
     body = RichTextField(
         blank=True,
@@ -605,7 +645,7 @@ class StandardPage(Page):
     content_panels = Page.content_panels + [
         FieldPanel('intro'),
         FieldPanel('body'),
-        FieldPanel("image"),
+        FieldPanel('image'),
     ]
 
     promote_panels = [
@@ -630,13 +670,29 @@ class StandardPage(Page):
 
 
 class StandardMDPage(Page):
+    """
+    -- DO NOT USE AS IS! --
+
+    Standard Page - Markdown Format
+
+    NOTE: This version is designed for content using Markdown format.
+
+    TODO: NEED TO FIX THIS PAGE TYPE TO PROPERLY USE MARKDOWN FORMAT.
+    """
+
     # Database fields
     intro = models.CharField(max_length=255)
-    body = StreamField(
-        SectionPageStreamBlock(),
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
         blank=True,
-        use_json_field=True,
-        help_text='Create a plain page without sidebar using Markdown format.',
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
+    )
+    body = RichTextField(
+        blank=True,
+        help_text='Create a plain page without sidebar using RichText format.',
     )
 
     # Search index configuration
@@ -649,6 +705,7 @@ class StandardMDPage(Page):
     content_panels = Page.content_panels + [
         FieldPanel('intro'),
         FieldPanel('body'),
+        FieldPanel('image'),
     ]
 
     promote_panels = [
@@ -668,7 +725,7 @@ class StandardMDPage(Page):
 
         context['show_meta'] = True
         context['show_intro'] = False
-        context['is_markdown'] = True
+        context['is_markdown'] = False  # TODO: CHANGE TO `TRUE` WHEN FIXED
         return context
 
 
@@ -710,8 +767,13 @@ class Advert(PreviewableMixin, index.Indexed, models.Model):
         return context
 
 
-# Related Links - abstract model
 class RelatedLink(models.Model):
+    """
+    Abstract model for related links.
+
+    This model is used to create links between related content pages.
+    """
+
     name = models.CharField(max_length=255)
     url = models.URLField()
 
@@ -726,6 +788,13 @@ class RelatedLink(models.Model):
 
 # Gallery Images
 class GalleryImage(models.Model):
+    """
+    Abstract model for gallery images.
+
+    This model is used to create links to one or more images
+    and it includes fields for captions and credits.
+    """
+
     image = models.ForeignKey(
         'wagtailimages.Image',
         on_delete=models.CASCADE,
@@ -760,8 +829,14 @@ class GalleryImage(models.Model):
         abstract = True
 
 
-# Banner Images
 class BannerImage(models.Model):
+    """
+    Abstract model for banner images.
+
+    This model is used to create links to one or more banner images
+    and it includes fierlds for captions and credit.
+    """
+
     image = models.ForeignKey(
         'wagtailimages.Image',
         null=True,
@@ -806,32 +881,32 @@ class GalleryPage(Page):
     and is intended to show the extensibility of this aspect of Wagtail
     """
 
-    introduction = models.TextField(help_text="Text to describe the page", blank=True)
+    introduction = models.TextField(help_text='Text to describe the page', blank=True)
     image = models.ForeignKey(
-        "wagtailimages.Image",
+        'wagtailimages.Image',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="+",
-        help_text="Landscape mode only; horizontal width between 1000px and " "3000px.",
+        related_name='+',
+        help_text='Landscape mode only; horizontal width between 1000px and ' '3000px.',
     )
     body = StreamField(
-        BaseStreamBlock(), verbose_name="Page body", blank=True, use_json_field=True
+        BaseStreamBlock(), verbose_name='Page body', blank=True, use_json_field=True
     )
     collection = models.ForeignKey(
         Collection,
-        limit_choices_to=~models.Q(name__in=["Root"]),
+        limit_choices_to=~models.Q(name__in=['Root']),
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        help_text="Select the image collection for this gallery.",
+        help_text='Select the image collection for this gallery.',
     )
 
     content_panels = Page.content_panels + [
-        FieldPanel("introduction"),
-        FieldPanel("body"),
-        FieldPanel("image"),
-        FieldPanel("collection"),
+        FieldPanel('introduction'),
+        FieldPanel('body'),
+        FieldPanel('image'),
+        FieldPanel('collection'),
     ]
 
     # Defining what content type can sit under the parent. Since it's a blank
@@ -849,16 +924,16 @@ class FormField(AbstractFormField):
     https://docs.wagtail.org/en/stable/reference/contrib/forms/index.html
     """
 
-    page = ParentalKey("FormPage", related_name="form_fields", on_delete=models.CASCADE)
+    page = ParentalKey('FormPage', related_name='form_fields', on_delete=models.CASCADE)
 
 
 class FormPage(AbstractEmailForm):
     image = models.ForeignKey(
-        "wagtailimages.Image",
+        'wagtailimages.Image',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name="+",
+        related_name='+',
     )
     body = StreamField(BaseStreamBlock(), use_json_field=True)
     thank_you_text = RichTextField(blank=True)
@@ -866,54 +941,22 @@ class FormPage(AbstractEmailForm):
     # Note how we include the FormField object via an InlinePanel using the
     # related_name value
     content_panels = AbstractEmailForm.content_panels + [
-        FieldPanel("image"),
-        FieldPanel("body"),
-        InlinePanel("form_fields", heading="Form fields", label="Field"),
-        FieldPanel("thank_you_text"),
+        FieldPanel('image'),
+        FieldPanel('body'),
+        InlinePanel('form_fields', heading='Form fields', label='Field'),
+        FieldPanel('thank_you_text'),
         MultiFieldPanel(
             [
                 FieldRowPanel(
                     [
-                        FieldPanel("from_address"),
-                        FieldPanel("to_address"),
+                        FieldPanel('from_address'),
+                        FieldPanel('to_address'),
                     ]
                 ),
-                FieldPanel("subject"),
+                FieldPanel('subject'),
             ],
-            "Email",
+            'Email',
         ),
-    ]
-
-
-@register_setting(icon="cog")
-class GenericSettings(ClusterableModel, BaseGenericSetting):
-    twitter_url = models.URLField(verbose_name="Twitter URL", blank=True)
-    github_url = models.URLField(verbose_name="GitHub URL", blank=True)
-    organisation_url = models.URLField(verbose_name="Organisation URL", blank=True)
-
-    panels = [
-        MultiFieldPanel(
-            [
-                FieldPanel("github_url"),
-                FieldPanel("twitter_url"),
-                FieldPanel("organisation_url"),
-            ],
-            "Social settings",
-        )
-    ]
-
-
-@register_setting(icon="site")
-class SiteSettings(BaseSiteSetting):
-    title_suffix = models.CharField(
-        verbose_name="Title suffix",
-        max_length=255,
-        help_text="The suffix for the title meta tag e.g. ' | The Wagtail Bakery'",
-        default="The Wagtail Bakery",
-    )
-
-    panels = [
-        FieldPanel("title_suffix"),
     ]
 
 
@@ -930,15 +973,13 @@ class UserApprovalTask(Task):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=False
     )
 
-    admin_form_fields = Task.admin_form_fields + ["user"]
+    admin_form_fields = Task.admin_form_fields + ['user']
 
     task_state_class = UserApprovalTaskState
 
     # prevent editing of `user` after the task is created
     # by default, this attribute contains the 'name' field to prevent tasks from being renamed
-    admin_form_readonly_on_edit_fields = Task.admin_form_readonly_on_edit_fields + [
-        "user"
-    ]
+    admin_form_readonly_on_edit_fields = Task.admin_form_readonly_on_edit_fields + ['user']
 
     def user_can_access_editor(self, page, user):
         return user == self.user
@@ -949,15 +990,15 @@ class UserApprovalTask(Task):
     def get_actions(self, page, user):
         if user == self.user:
             return [
-                ("approve", "Approve", False),
-                ("reject", "Reject", False),
-                ("cancel", "Cancel", False),
+                ('approve', 'Approve', False),
+                ('reject', 'Reject', False),
+                ('cancel', 'Cancel', False),
             ]
         else:
             return []
 
     def on_action(self, task_state, user, action_name, **kwargs):
-        if action_name == "cancel":
+        if action_name == 'cancel':
             return task_state.workflow_state.cancel(user=user)
         else:
             return super().on_action(task_state, user, action_name, **kwargs)
@@ -973,4 +1014,4 @@ class UserApprovalTask(Task):
 
     @classmethod
     def get_description(cls):
-        return _("Only a specific user can approve this task")
+        return _('Only a specific user can approve this task')

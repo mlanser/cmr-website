@@ -12,7 +12,7 @@ from wagtail.models import Page, Orderable
 from wagtail.search import index
 
 from base.models import RelatedLink, GalleryImage, BannerImage
-from sections.blocks import SectionPageStreamBlock
+from base.blocks import BaseStreamBlock
 
 
 # ---------------------------------------------------------
@@ -202,7 +202,7 @@ class SectionMDPage(Page):
     tags = ClusterTaggableManager(through=SectionMDPageTag, blank=True)
     intro = models.CharField(max_length=255)
     body = StreamField(
-        SectionPageStreamBlock(),
+        BaseStreamBlock(),
         blank=True,
         use_json_field=True,
         help_text='Content for section page using Markdown format.',
