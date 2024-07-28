@@ -1,12 +1,15 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib import messages
+from django.shortcuts import redirect, render
 
+from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
-from taggit.models import TaggedItemBase
+from taggit.models import Tag, TaggedItemBase
 
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel, MultipleChooserPanel
-from wagtail.fields import StreamField
+from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
 from wagtail.search import index
 
@@ -37,11 +40,7 @@ class BlogMDPageTag(TaggedItemBase):
 # ---------------------------------------------------------
 #           C O R E   P A G E   M O D E L S
 # ---------------------------------------------------------
-# Blog Main Page model
-#
-# NOTE: The blog main page is essentially the 'home page' for the blog section. It
-#       does not have any content of its own and only aggregates blog content.
-class BlogMain(Page):
+class BlogMain(RoutablePageMixin, Page):
     """
     Main/landing page for blogs.
 
@@ -55,11 +54,12 @@ class BlogMain(Page):
           defined above.
     """
 
-    # ////////////////////////////////////////////////////////////
-
     # --------------------------------
     # Database fields
     # --------------------------------
+    # Text to be displayed on the sidebar in the `About` tile.
+    about = RichTextField(help_text='Text to describe this section', blank=True)
+
     # Max recent items to show on blog landing page
     max_recent = models.IntegerField(
         default=6,
@@ -75,8 +75,9 @@ class BlogMain(Page):
     # Editor panels configuration
     # --------------------------------
     content_panels = Page.content_panels + [
-        InlinePanel('banner_images', label='Banner images'),
+        FieldPanel('introduction'),
         FieldPanel('max_recent'),
+        InlinePanel('banner_images', label='Banner images'),
     ]
 
     promote_panels = [
@@ -93,6 +94,59 @@ class BlogMain(Page):
     # Misc fields, helpers, and custom methods
     # --------------------------------
     page_description = 'Use this content type for the blog landing page.'
+
+    # Method to access the children of the blog landing page (i.e. `BlogPage`
+    # and `BlogMDPage` objects).
+    def children(self):
+        return self.get_children().specific().live()
+
+    # This defines a Custom view that utilizes Tags. This view will return all
+    # related BlogPages for a given Tag or redirect back to the BlogIndexPage.
+    # More information on RoutablePages is at
+    # https://docs.wagtail.org/en/stable/reference/contrib/routablepage.html
+    @route(r'^tags/$', name='tag_archive')
+    @route(r'^tags/([\w-]+)/$', name='tag_archive')
+    def tag_archive(self, request, tag=None):
+        try:
+            tag = Tag.objects.get(slug=tag)
+        except Tag.DoesNotExist:
+            if tag:
+                msg = 'There are no blog posts tagged with "{}"'.format(tag)
+                messages.add_message(request, messages.INFO, msg)
+            return redirect(self.url)
+
+        posts = self.get_posts(tag=tag)
+        context = {'self': self, 'tag': tag, 'posts': posts}
+        return render(request, 'blog/blog_index_page.html', context)
+
+    def serve_preview(self, request, mode_name):
+        # Needed for previews to work
+        return self.serve(request)
+
+    # Returns the child BlogPage objects for this BlogPageIndex.
+    # If a tag is used then it will filter the posts by tag.
+    def get_posts(self, tag=None):
+        posts = BlogPage.objects.live().descendant_of(self)
+        if tag:
+            posts = posts.filter(tags=tag)
+        return posts
+
+    # Returns the list of Tags for all child posts of this BlogPage.
+    def get_child_tags(self):
+        tags = []
+        for post in self.get_posts():
+            # Not tags.append() because we don't want a list of lists
+            tags += post.get_tags
+        tags = sorted(set(tags))
+        return tags
+
+    # Overrides the context to list all child items, that are live, by the
+    # date that they were published
+    # https://docs.wagtail.org/en/stable/getting_started/tutorial.html#overriding-context
+    # def get_context(self, request):
+    #     context = super().get_context(request)
+    #     context['posts'] = BlogPage.objects.descendant_of(self).live().order_by('-date_published')
+    #     return context
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
