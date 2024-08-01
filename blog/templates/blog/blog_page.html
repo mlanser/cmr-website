@@ -11,25 +11,23 @@
         <header class="major">
             <h2>{{ page.title }}</h2>
             {% if show_meta %}
-            <p class="metadata">
-                <span class="icon solid fa-calendar-alt"></span><span class="date">{{ page.date }}</span>
-                {% with tags=page.tags.all %}
-                    {% if tags %}
-                    | <span class="icon solid fa-tags"></span>
-                    {% for tag in tags %}
-                        <a class="tags" href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
-                    {% endfor %}
+                <p class="metadata">
+                    <span class="icon solid fa-calendar-alt"></span><span class="date">{{ page.date }}</span>
+                    {% if page.get_tags %}
+                        | <span class="icon solid fa-tags"></span>
+                        {% for tag in page.get_tags %}
+                            <a class="tags" href="{{ tag.url }}">{{ tag }}</a>
+                        {% endfor %}
                     {% endif %}
-                {% endwith %}
-                {% with authors=page.authors.all %}
-                    {% if authors %}
-                    | <span class="icon solid fa-user"></span>
-                    {% for author in authors %}
-                        <span class="author">{{ author.name }}</span>
+                </p>
+                {% if page.authors %}
+                <p class="metadata author">
+                {% for author in authors %}
+                    {% picture author.image format-{avif,webp,jpeg} fill-50x50-c100 class="author avatar mini" %}
+                    {{ author.first_name }} {{ author.last_name }}
                     {% endfor %}
-                    {% endif %}
-                {% endwith %}
-            </p>
+                </p>
+                {% endif %}
             {% endif %}
         </header>
 
@@ -58,4 +56,4 @@
 {% if page.get_parent.url != page.url %}
 <!-- p><a href="{{ page.get_parent.url }}">Return to {{ page.get_parent.title }}</a></p -->
 {% endif %}
-{% endblock %}
+{% endblock content %}

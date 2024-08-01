@@ -23,7 +23,7 @@
             <!-- Recent Content -->
             <section id="three" class="wrapper style2">
                 <div class="inner">
-                    <h2>{% if header_recent %}{{ header_recent }}{% else %}Recent Posts{% endif %}</h2>
+                    <h2>{% if header %}{{ header_recent }}{% else %}Recent Posts{% endif %}</h2>
                     <div class="posts">
                         {% include "includes/recent.html" %}
                     </div>
@@ -36,4 +36,4 @@
 
     </div>
 </section>
-{% endblock %}
+{% endblock content %}

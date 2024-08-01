@@ -19,11 +19,17 @@ from sections.models import SectionPage, SectionMDPage
 # ---------------------------------------------------------
 #           C O R E   P A G E   M O D E L S
 # ---------------------------------------------------------
-# Home Page model
-#
-# NOTE: The home page is specail in that it does not have any content of its own
-#       and only aggregates content from other sections.
 class HomePage(Page):
+    """
+    Home Page model
+
+    The home page is specail in that it does not have any content of its own
+    and only aggregates content from other sections.
+
+    TODO:
+    [ ] Add `faker` factory in `factories.py`
+    """
+
     # --------------------------------
     # Database fields
     # --------------------------------
@@ -33,7 +39,7 @@ class HomePage(Page):
         verbose_name='Show promoted',
         help_text='Show promoted content on home page?',
     )
-    promoted_page = models.ForeignKey(
+    promo_page = models.ForeignKey(
         'wagtailcore.Page',
         null=True,
         blank=True,
@@ -79,14 +85,14 @@ class HomePage(Page):
     )
 
     # --------------------------------
-    # Editor panels configuration
+    # Editor panels & search index configuration
     # --------------------------------
     content_panels = Page.content_panels + [
         InlinePanel('banner_slides', label='Banner slides'),
         MultiFieldPanel(
             [
                 FieldPanel('show_promo'),
-                PageChooserPanel('promoted_page', 'sections.SectionPage'),
+                PageChooserPanel('promo_page', 'sections.SectionPage'),
             ],
             heading='Promoted content',
         ),
@@ -128,6 +134,9 @@ class HomePage(Page):
     # Misc fields, helpers, and custom methods
     # --------------------------------
     page_description = 'Use this content type for the home page.'
+
+    def __str__(self):
+        return 'HomePage'
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)

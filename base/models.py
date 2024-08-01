@@ -7,7 +7,6 @@ from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 from phonenumber_field.modelfields import PhoneNumberField
 
-from wagtail.snippets.models import register_snippet
 from wagtail.admin.panels import (
     FieldPanel,
     FieldRowPanel,
@@ -42,7 +41,10 @@ from wagtail.search import index
 from base.blocks import BaseStreamBlock
 
 
-@register_setting(icon='cog')
+# ---------------------------------------------------------
+#         C O R E   H E L P E R   C L A S S E S
+# ---------------------------------------------------------
+@register_setting(icon='address-card')
 class ContactSettings(ClusterableModel, BaseGenericSetting):
     email_cmr = models.EmailField(
         help_text='Email address for CMR', verbose_name='CMR email', blank=True
@@ -214,24 +216,6 @@ class ContactSettings(ClusterableModel, BaseGenericSetting):
     ]
 
 
-# @register_setting(icon="cog")
-# class GenericSettings(ClusterableModel, BaseGenericSetting):
-#     twitter_url = models.URLField(verbose_name="Twitter URL", blank=True)
-#     github_url = models.URLField(verbose_name="GitHub URL", blank=True)
-#     organisation_url = models.URLField(verbose_name="Organisation URL", blank=True)
-
-#     panels = [
-#         MultiFieldPanel(
-#             [
-#                 FieldPanel("github_url"),
-#                 FieldPanel("twitter_url"),
-#                 FieldPanel("organisation_url"),
-#             ],
-#             "Social settings",
-#         )
-#     ]
-
-
 @register_setting(icon='site')
 class SiteSettings(BaseSiteSetting):
     title_suffix = models.CharField(
@@ -254,7 +238,16 @@ class CopyrightText(
     models.Model,
 ):
     """
-    TBD
+    Editable text for the copyright text in the website footer.
+
+    It is registered using `register_snippet` as a function in `wagtail_hooks.py`
+    to be grouped with the `Person` model inside the same main menu item. It is made
+    accessible on the template via a template tag defined in base/templatetags/
+    navigation_tags.py
+
+    TODO:
+    [ ] Add `faker` factory in `factories.py`
+    [ ] Add seeding function for DEV environment
     """
 
     body = models.TextField(
@@ -296,11 +289,16 @@ class FooterText(
     models.Model,
 ):
     """
-    This provides editable text for the site footer. Again it is registered
-    using `register_snippet` as a function in wagtail_hooks.py to be grouped
-    together with the Person model inside the same main menu item. It is made
+    Editable additional (non-copyright) text in the website footer.
+
+    It is registered using `register_snippet` as a function in `wagtail_hooks.py` to
+    be grouped with the `Person` model inside the same main menu item. It is made
     accessible on the template via a template tag defined in base/templatetags/
     navigation_tags.py
+
+    TODO:
+    [ ] Add `faker` factory in `factories.py`
+    [ ] Add seeding function for DEV environment
     """
 
     body = RichTextField()
@@ -332,157 +330,6 @@ class FooterText(
         verbose_name_plural = 'Footer text'
 
 
-class Author(
-    WorkflowMixin,
-    DraftStateMixin,
-    LockableMixin,
-    RevisionMixin,
-    PreviewableMixin,
-    index.Indexed,
-    ClusterableModel,
-):
-    name = models.CharField(max_length=255)
-    image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='Author image',
-        help_text='Use image ratio 1:1 and max size 800x800 px.',
-    )
-
-    panels = [
-        FieldPanel('name'),
-        FieldPanel('image'),
-    ]
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Author'
-        verbose_name_plural = 'Authors'
-
-
-class Sponsor(
-    WorkflowMixin,
-    DraftStateMixin,
-    LockableMixin,
-    RevisionMixin,
-    PreviewableMixin,
-    index.Indexed,
-    ClusterableModel,
-):
-    name = models.CharField(max_length=255)
-    image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='Sponsor image',
-        help_text='Use image ratio 1:1 and max size 800x800 px.',
-    )
-
-    panels = [
-        FieldPanel('name'),
-        FieldPanel('image'),
-    ]
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name_plural = 'Sponsors'
-
-
-class Organizer(
-    WorkflowMixin,
-    DraftStateMixin,
-    LockableMixin,
-    RevisionMixin,
-    PreviewableMixin,
-    index.Indexed,
-    ClusterableModel,
-):
-    name = models.CharField(max_length=255)
-    image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='Organizer image',
-        help_text='Use image ratio 1:1 and max size 800x800 px.',
-    )
-
-    panels = [
-        FieldPanel('name'),
-        FieldPanel('image'),
-    ]
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name_plural = 'Organizers'
-
-
-@register_snippet
-class Location(models.Model):
-    # TODO: Move to separate app/model
-    name = models.CharField(max_length=255)
-    image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='Location image',
-        help_text='Use image ratio 1:1 and max size 800x800 px.',
-    )
-
-    panels = [
-        FieldPanel('name'),
-        FieldPanel('image'),
-    ]
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name_plural = 'Locations'
-
-
-class ContactField(AbstractFormField):
-    page = ParentalKey('ContactForm', on_delete=models.CASCADE, related_name='contact_fields')
-
-
-class ContactForm(AbstractEmailForm):
-    intro = RichTextField(blank=True)
-    thank_you_text = RichTextField(blank=True)
-
-    content_panels = AbstractEmailForm.content_panels + [
-        FormSubmissionsPanel(),
-        FieldPanel('intro'),
-        InlinePanel('contact_fields', label='Contact Form fields'),
-        FieldPanel('thank_you_text'),
-        MultiFieldPanel(
-            [
-                FieldRowPanel(
-                    [
-                        FieldPanel('from_address'),
-                        FieldPanel('to_address'),
-                    ]
-                ),
-                FieldPanel('subject'),
-            ],
-            'Email',
-        ),
-    ]
-
-
 class Person(
     WorkflowMixin,
     DraftStateMixin,
@@ -493,7 +340,8 @@ class Person(
     ClusterableModel,
 ):
     """
-    A Django model to store Person objects.
+    Person object - using standard Django model
+
     It is registered using `register_snippet` as a function in wagtail_hooks.py
     to allow it to have a menu item within a custom menu item group.
 
@@ -502,12 +350,22 @@ class Person(
     until the parent is explicitly saved. This allows the editor to use the
     'Preview' button, to preview the content, without saving the relationships
     to the database.
+
     https://github.com/wagtail/django-modelcluster
+
+    TODO:
+    [x] Add `faker` factory in `factories.py`
+    [ ] Change `get_preview_template` to not use `BlogPage`
+    [ ] Change `get_preview_context` to not use `BlogPage`
     """
 
-    first_name = models.CharField('First name', max_length=254)
-    last_name = models.CharField('Last name', max_length=254)
-    job_title = models.CharField('Job title', max_length=254)
+    first_name = models.CharField('First name', max_length=255)
+    last_name = models.CharField('Last name', max_length=255)
+    email = models.EmailField('Email', blank=True)
+    street = models.CharField('First name', blank=True, max_length=255)
+    city = models.CharField('First name', blank=True, max_length=255)
+    state = models.CharField('First name', blank=True, max_length=255)
+    zip = models.CharField('First name', blank=True, max_length=255)
 
     image = models.ForeignKey(
         'wagtailimages.Image',
@@ -545,7 +403,20 @@ class Person(
             ],
             'Name',
         ),
-        FieldPanel('job_title'),
+        FieldPanel('email'),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel('street'),
+                        FieldPanel('city'),
+                        FieldPanel('state'),
+                        FieldPanel('zip'),
+                    ]
+                )
+            ],
+            'Mailing address',
+        ),
         FieldPanel('image'),
         PublishingPanel(),
     ]
@@ -553,7 +424,9 @@ class Person(
     search_fields = [
         index.SearchField('first_name'),
         index.SearchField('last_name'),
-        index.FilterField('job_title'),
+        index.SearchField('city'),
+        index.SearchField('state'),
+        index.SearchField('zip'),
         index.AutocompleteField('first_name'),
         index.AutocompleteField('last_name'),
     ]
@@ -575,14 +448,14 @@ class Person(
         return f'{self.first_name} {self.last_name}'
 
     def get_preview_template(self, request, mode_name):
-        from bakerydemo.blog.models import BlogPage
+        from blog.models import BlogPage
 
         if mode_name == 'blog_post':
             return BlogPage.template
         return 'base/preview/person.html'
 
     def get_preview_context(self, request, mode_name):
-        from bakerydemo.blog.models import BlogPage
+        from blog.models import BlogPage
 
         context = super().get_preview_context(request, mode_name)
         if mode_name == self.default_preview_mode:
@@ -610,123 +483,78 @@ class Person(
         verbose_name_plural = 'People'
 
 
-class StandardPage(Page):
+class ContactField(AbstractFormField):
+    page = ParentalKey('ContactForm', on_delete=models.CASCADE, related_name='contact_fields')
+
+
+class ContactForm(AbstractEmailForm):
+    intro = RichTextField(blank=True)
+    thank_you_text = RichTextField(blank=True)
+
+    content_panels = AbstractEmailForm.content_panels + [
+        FormSubmissionsPanel(),
+        FieldPanel('intro'),
+        InlinePanel('contact_fields', label='Contact Form fields'),
+        FieldPanel('thank_you_text'),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel('from_address'),
+                        FieldPanel('to_address'),
+                    ]
+                ),
+                FieldPanel('subject'),
+            ],
+            'Email',
+        ),
+    ]
+
+
+class FormField(AbstractFormField):
     """
-    Standard Page - RichText Format
-
-    Plain standard page without banner or header sections
-
-    This is a simple page with a basic fields (e.g. title, body, etc.)
-    and it's best used for pages such as T&C, etc.
+    Wagtailforms is a module to introduce simple forms on a Wagtail site. It
+    isn't intended as a replacement to Django's form support but as a quick way
+    to generate a general purpose data-collection form or contact form
+    without having to write code. We use it on the site for a contact form. You
+    can read more about Wagtail forms at:
+    https://docs.wagtail.org/en/stable/reference/contrib/forms/index.html
     """
 
-    # Database fields
-    intro = models.CharField(max_length=255)
+    page = ParentalKey('FormPage', related_name='form_fields', on_delete=models.CASCADE)
+
+
+class FormPage(AbstractEmailForm):
     image = models.ForeignKey(
         'wagtailimages.Image',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name='+',
-        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
     )
-    body = RichTextField(
-        blank=True,
-        help_text='Create a plain page without sidebar using RichText format.',
-    )
+    body = StreamField(BaseStreamBlock(), use_json_field=True)
+    thank_you_text = RichTextField(blank=True)
 
-    # Search index configuration
-    search_fields = Page.search_fields + [
-        index.SearchField('body'),
-        index.SearchField('intro'),
-    ]
-
-    # Editor panels configuration
-    content_panels = Page.content_panels + [
-        FieldPanel('intro'),
-        FieldPanel('body'),
+    # Note how we include the FormField object via an InlinePanel using the
+    # related_name value
+    content_panels = AbstractEmailForm.content_panels + [
         FieldPanel('image'),
-    ]
-
-    promote_panels = [
-        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
-    ]
-
-    # Parent page / subpage type rules
-    parent_page_types = ['home.HomePage']
-    subpage_types = []
-
-    # Misc fields, helpers, and custom methods
-    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
-    template = 'base/standard_page.html'
-
-    def get_context(self, request, *args, **kwargs):
-        context = super().get_context(request, *args, **kwargs)
-
-        context['show_meta'] = True
-        context['show_intro'] = False
-        context['is_richtext'] = True
-        return context
-
-
-class StandardMDPage(Page):
-    """
-    -- DO NOT USE AS IS! --
-
-    Standard Page - Markdown Format
-
-    NOTE: This version is designed for content using Markdown format.
-
-    TODO: NEED TO FIX THIS PAGE TYPE TO PROPERLY USE MARKDOWN FORMAT.
-    """
-
-    # Database fields
-    intro = models.CharField(max_length=255)
-    image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
-    )
-    body = RichTextField(
-        blank=True,
-        help_text='Create a plain page without sidebar using RichText format.',
-    )
-
-    # Search index configuration
-    search_fields = Page.search_fields + [
-        index.SearchField('body'),
-        index.SearchField('intro'),
-    ]
-
-    # Editor panels configuration
-    content_panels = Page.content_panels + [
-        FieldPanel('intro'),
         FieldPanel('body'),
-        FieldPanel('image'),
+        InlinePanel('form_fields', heading='Form fields', label='Field'),
+        FieldPanel('thank_you_text'),
+        MultiFieldPanel(
+            [
+                FieldRowPanel(
+                    [
+                        FieldPanel('from_address'),
+                        FieldPanel('to_address'),
+                    ]
+                ),
+                FieldPanel('subject'),
+            ],
+            'Email',
+        ),
     ]
-
-    promote_panels = [
-        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
-    ]
-
-    # Parent page / subpage type rules
-    parent_page_types = ['home.HomePage']
-    subpage_types = []
-
-    # Misc fields, helpers, and custom methods
-    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
-    template = 'base/standard_page.html'
-
-    def get_context(self, request, *args, **kwargs):
-        context = super().get_context(request, *args, **kwargs)
-
-        context['show_meta'] = True
-        context['show_intro'] = False
-        context['is_markdown'] = False  # TODO: CHANGE TO `TRUE` WHEN FIXED
-        return context
 
 
 # Advert model
@@ -786,13 +614,15 @@ class RelatedLink(models.Model):
         abstract = True
 
 
-# Gallery Images
 class GalleryImage(models.Model):
     """
     Abstract model for gallery images.
 
     This model is used to create links to one or more images
     and it includes fields for captions and credits.
+
+    TODO:
+    [ ] Add `faker` factory in `factories.py`
     """
 
     image = models.ForeignKey(
@@ -835,6 +665,9 @@ class BannerImage(models.Model):
 
     This model is used to create links to one or more banner images
     and it includes fierlds for captions and credit.
+
+    TODO:
+    [ ] Add `faker` factory in `factories.py`
     """
 
     image = models.ForeignKey(
@@ -875,10 +708,10 @@ class BannerImage(models.Model):
 
 class GalleryPage(Page):
     """
-    This is a page to list locations from the selected Collection. We use a Q
-    object to list any Collection created (/admin/collections/) even if they
-    contain no items. In this demo we use it for a GalleryPage,
-    and is intended to show the extensibility of this aspect of Wagtail
+    Gallery page to display a list of images.
+
+    Use a Q object to list any Collection created (/admin/collections/) even if they
+    contain no items.
     """
 
     introduction = models.TextField(help_text='Text to describe the page', blank=True)
@@ -912,52 +745,6 @@ class GalleryPage(Page):
     # Defining what content type can sit under the parent. Since it's a blank
     # array no subpage can be added
     subpage_types = []
-
-
-class FormField(AbstractFormField):
-    """
-    Wagtailforms is a module to introduce simple forms on a Wagtail site. It
-    isn't intended as a replacement to Django's form support but as a quick way
-    to generate a general purpose data-collection form or contact form
-    without having to write code. We use it on the site for a contact form. You
-    can read more about Wagtail forms at:
-    https://docs.wagtail.org/en/stable/reference/contrib/forms/index.html
-    """
-
-    page = ParentalKey('FormPage', related_name='form_fields', on_delete=models.CASCADE)
-
-
-class FormPage(AbstractEmailForm):
-    image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-    )
-    body = StreamField(BaseStreamBlock(), use_json_field=True)
-    thank_you_text = RichTextField(blank=True)
-
-    # Note how we include the FormField object via an InlinePanel using the
-    # related_name value
-    content_panels = AbstractEmailForm.content_panels + [
-        FieldPanel('image'),
-        FieldPanel('body'),
-        InlinePanel('form_fields', heading='Form fields', label='Field'),
-        FieldPanel('thank_you_text'),
-        MultiFieldPanel(
-            [
-                FieldRowPanel(
-                    [
-                        FieldPanel('from_address'),
-                        FieldPanel('to_address'),
-                    ]
-                ),
-                FieldPanel('subject'),
-            ],
-            'Email',
-        ),
-    ]
 
 
 class UserApprovalTaskState(TaskState):
@@ -1015,3 +802,150 @@ class UserApprovalTask(Task):
     @classmethod
     def get_description(cls):
         return _('Only a specific user can approve this task')
+
+
+# ---------------------------------------------------------
+#           C O R E   P A G E   M O D E L S
+# ---------------------------------------------------------
+class StandardPage(Page):
+    """
+    Standard Page - RichText Format
+
+    Plain standard page without banner or header sections
+
+    This is a simple page with a basic fields (e.g. title, body, etc.)
+    and it's best used for pages such as T&C, etc.
+
+    TODO:
+    [ ] Add `faker` factory in `factories.py`
+    """
+
+    # --------------------------------
+    # Database fields
+    # --------------------------------
+    intro = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
+    )
+    body = RichTextField(
+        blank=True,
+        help_text='Create a plain page without sidebar using RichText format.',
+    )
+
+    # --------------------------------
+    # Editor panels & search index configuration
+    # --------------------------------
+    content_panels = Page.content_panels + [
+        FieldPanel('intro'),
+        FieldPanel('body'),
+        FieldPanel('image'),
+    ]
+
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
+    ]
+
+    search_fields = Page.search_fields + [
+        index.SearchField('body'),
+        index.SearchField('intro'),
+    ]
+
+    # --------------------------------
+    # Parent page / subpage type rules
+    # --------------------------------
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+
+    # --------------------------------
+    # Misc fields, helpers, and custom methods
+    # --------------------------------
+    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
+    template = 'base/standard_page.html'
+
+    def __str__(self):
+        return f'Standard page - {self.title}'
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+
+        context['show_meta'] = True
+        context['show_intro'] = False
+        context['is_richtext'] = True
+        return context
+
+
+class StandardMDPage(Page):
+    """
+    -- DO NOT USE AS IS! --
+
+    Standard Page - Markdown Format
+
+    NOTE: This version is designed for content using Markdown format.
+
+    TODO:
+    [ ] NEED TO FIX THIS PAGE TYPE TO PROPERLY USE MARKDOWN FORMAT.
+    [ ] Add `faker` factory in `factories.py`
+    """
+
+    # --------------------------------
+    # Database fields
+    # --------------------------------
+    intro = models.CharField(max_length=255)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
+    )
+    body = RichTextField(
+        blank=True,
+        help_text='Create a plain page without sidebar using RichText format.',
+    )
+
+    # --------------------------------
+    # Editor panels & search index configuration
+    # --------------------------------
+    content_panels = Page.content_panels + [
+        FieldPanel('intro'),
+        FieldPanel('body'),
+        FieldPanel('image'),
+    ]
+
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
+    ]
+
+    search_fields = Page.search_fields + [
+        index.SearchField('body'),
+        index.SearchField('intro'),
+    ]
+
+    # --------------------------------
+    # Parent page / subpage type rules
+    # --------------------------------
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+
+    # --------------------------------
+    # Misc fields, helpers, and custom methods
+    # --------------------------------
+    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
+    template = 'base/standard_page.html'
+
+    def __str__(self):
+        return f'Standard MD page - {self.title}'
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+
+        context['show_meta'] = True
+        context['show_intro'] = False
+        context['is_markdown'] = False  # TODO: CHANGE TO `TRUE` WHEN FIXED
+        return context

@@ -1,10 +1,12 @@
-from django import forms
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib import messages
+from django.shortcuts import redirect, render
 
+from wagtail.contrib.routable_page.models import route
 from modelcluster.contrib.taggit import ClusterTaggableManager
-from modelcluster.fields import ParentalKey, ParentalManyToManyField
-from taggit.models import TaggedItemBase
+from modelcluster.fields import ParentalKey
+from taggit.models import Tag, TaggedItemBase
 
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.fields import RichTextField, StreamField
@@ -19,25 +21,47 @@ from base.blocks import BaseStreamBlock
 #         C O R E   H E L P E R   C L A S S E S
 # ---------------------------------------------------------
 class SectionPageTag(TaggedItemBase):
+    """
+    Model to create a many-to-many relationship between
+    the `SectionPage` objects and tags.
+    """
+
     content_object = ParentalKey(
-        'SectionPage', on_delete=models.CASCADE, related_name='tagged_items'
+        'sections.SectionPage', on_delete=models.CASCADE, related_name='tagged_items'
     )
 
 
 class SectionMDPageTag(TaggedItemBase):
+    """
+    Model to create a many-to-many relationship between
+    the `SectionMDPage` objects and tags.
+    """
+
     content_object = ParentalKey(
-        'SectionMDPage', on_delete=models.CASCADE, related_name='tagged_items'
+        'sections.SectionMDPage', on_delete=models.CASCADE, related_name='tagged_items'
     )
 
 
 class EventPageTag(TaggedItemBase):
+    """
+    Model to create a many-to-many relationship between
+    the `EventPage` objects and tags.
+    """
+
     content_object = ParentalKey(
-        'EventPage', on_delete=models.CASCADE, related_name='tagged_items'
+        'sections.EventPage', on_delete=models.CASCADE, related_name='tagged_items'
     )
 
 
 class ShowPageTag(TaggedItemBase):
-    content_object = ParentalKey('ShowPage', on_delete=models.CASCADE, related_name='tagged_items')
+    """
+    Model to create a many-to-many relationship between
+    the `ShowPage` objects and tags.
+    """
+
+    content_object = ParentalKey(
+        'sections.ShowPage', on_delete=models.CASCADE, related_name='tagged_items'
+    )
 
 
 # ---------------------------------------------------------
@@ -48,10 +72,40 @@ class ShowPageTag(TaggedItemBase):
 # NOTE: The section main page is essentially the 'home page' of a given section. It does
 #       have its own content in the the 'About' box on the sidebar.
 class SectionMain(Page):
+    """
+    Main/landing page for main sections.
+
+    The section main page is essentially the 'home page' for core sections. It
+    does not have any content of its own and only aggregates section content.
+
+    NOTE: We need to alter the page model's context to return the child page objects
+          so that it works as an index page
+
+    NOTE: We use `RoutablePageMixin` to allow for custom sub-URLs for the tag views
+          defined above.
+
+    TODO:
+    TODO:
+    [ ] Finish support for `SectionMDPage`
+    [ ] Add `SectionMDPage` children to `get_posts` method
+    [ ] Add `faker` factory in `factories.py`
+    """
+
     # --------------------------------
     # Database fields
     # --------------------------------
     # Show events on section landing page?
+    about = RichTextField(blank=True, help_text='Text to describe this section')
+    about_title = models.CharField(blank=True, max_length=255)
+    about_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
+    )
+
     show_happening = models.BooleanField(
         default=False,
         verbose_name='Show events',
@@ -81,7 +135,9 @@ class SectionMain(Page):
     # Editor panels configuration
     # --------------------------------
     content_panels = Page.content_panels + [
-        InlinePanel('banner_images', label='Banner images'),
+        FieldPanel('about'),
+        FieldPanel('about_title'),
+        FieldPanel('about_image'),
         MultiFieldPanel(
             [
                 # This will have more fields in the future
@@ -90,6 +146,7 @@ class SectionMain(Page):
             heading='Section main page events',
         ),
         FieldPanel('max_recent'),
+        InlinePanel('banner_images', label='Banner images'),
         # FieldPanel('show_contact_info'),
     ]
 
@@ -108,6 +165,63 @@ class SectionMain(Page):
     # --------------------------------
     page_description = 'Use this content type for section landing page content.'
 
+    def __str__(self):
+        return f'SectionMain - {self.title}'
+
+    # Method to access the children of the section landing page (i.e. `SectionPage`
+    # and `SectionMDPage` objects).
+    def children(self):
+        return self.get_children().specific().live()
+
+    # This defines a custom view that utilizes Tags. This view will return all
+    # related BlogPages for a given Tag or redirect back to the BlogIndexPage.
+    # More information on RoutablePages is at
+    # https://docs.wagtail.org/en/stable/reference/contrib/routablepage.html
+    @route(r'^tags/$', name='tag_archive')
+    @route(r'^tags/([\w-]+)/$', name='tag_archive')
+    def tag_archive(self, request, tag=None):
+        try:
+            tag = Tag.objects.get(slug=tag)
+        except Tag.DoesNotExist:
+            if tag:
+                msg = f'There is no content tagged with "{tag}"'
+                messages.add_message(request, messages.INFO, msg)
+            return redirect(self.url)
+
+        posts = self.get_posts(tag=tag)
+        context = {
+            'self': self,
+            'tag': tag,
+            'posts': posts,
+            'header': f'Content tagged with: {tag}',
+        }
+        # TODO: Check if this is the correct template
+        return render(request, 'sections/section_main.html', context)
+
+    def serve_preview(self, request, mode_name):
+        # Needed for previews to work
+        return self.serve(request)
+
+    # Returns the child SectionPage objects for this SectionMain page.
+    # If a tag is used then it will filter the posts by tag.
+    def get_posts(self, tag=None):
+        posts = SectionPage.objects.live().descendant_of(self)
+        if tag:
+            posts = posts.filter(tags=tag)
+        return posts
+
+    # Returns the list of Tags for all child posts of this BlogPage.
+    def get_child_tags(self):
+        tags = []
+        for post in self.get_posts():
+            # Not using `tags.append()` as we do not want a list of lists
+            tags += post.get_tags
+        return sorted(set(tags))
+
+    # Override default context to list all child items
+    #
+    # Docs:
+    # https://docs.wagtail.org/en/stable/getting_started/tutorial.html#overriding-context
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
 
@@ -198,7 +312,7 @@ class SectionMDPage(Page):
     # Database fields
     # --------------------------------
     date = models.DateField('Post date')
-    authors = ParentalManyToManyField('base.Author', blank=True)
+    # authors = ParentalManyToManyField('base.Author', blank=True)
     tags = ClusterTaggableManager(through=SectionMDPageTag, blank=True)
     intro = models.CharField(max_length=255)
     body = StreamField(
@@ -224,7 +338,7 @@ class SectionMDPage(Page):
         MultiFieldPanel(
             [
                 FieldPanel('date'),
-                FieldPanel('authors', widget=forms.CheckboxSelectMultiple),
+                # FieldPanel('authors', widget=forms.CheckboxSelectMultiple),
                 FieldPanel('tags'),
             ],
             heading='Content meta data',
@@ -275,7 +389,7 @@ class SectionPage(Page):
     # Database fields
     # --------------------------------
     date = models.DateField('Post date')
-    authors = ParentalManyToManyField('base.Author', blank=True)
+    # authors = ParentalManyToManyField('base.Author', blank=True)
     tags = ClusterTaggableManager(through=SectionPageTag, blank=True)
     intro = models.CharField(max_length=255)
     body = RichTextField(
@@ -299,7 +413,7 @@ class SectionPage(Page):
         MultiFieldPanel(
             [
                 FieldPanel('date'),
-                FieldPanel('authors', widget=forms.CheckboxSelectMultiple),
+                # FieldPanel('authors', widget=forms.CheckboxSelectMultiple),
                 FieldPanel('tags'),
             ],
             heading='Content meta data',
@@ -368,9 +482,7 @@ class EventPage(Page):
         help_text='Is this a public event?',
     )
 
-    organizers = ParentalManyToManyField('base.Organizer', blank=True)
-    location = ParentalManyToManyField('base.Location', blank=True)
-    sponsors = ParentalManyToManyField('base.Sponsor', blank=True)
+    # location = ParentalManyToManyField('base.Location', blank=True)
 
     # --------------------------------
     # Search index configuration
@@ -398,9 +510,7 @@ class EventPage(Page):
                 FieldPanel('event_start_time'),
                 FieldPanel('event_end_time'),
                 FieldPanel('public'),
-                FieldPanel('organizers', widget=forms.CheckboxSelectMultiple),
-                FieldPanel('location', widget=forms.RadioSelect),
-                FieldPanel('sponsors', widget=forms.CheckboxSelectMultiple),
+                # FieldPanel('location', widget=forms.RadioSelect),
             ],
             heading='Event information',
         ),
@@ -469,9 +579,7 @@ class ShowPage(Page):
         help_text='Is this a public event?',
     )
 
-    organizers = ParentalManyToManyField('base.Organizer', blank=True)
-    location = ParentalManyToManyField('base.Location', blank=True)
-    sponsors = ParentalManyToManyField('base.Sponsor', blank=True)
+    # location = ParentalManyToManyField('base.Location', blank=True)
 
     # --------------------------------
     # Search index configuration
@@ -500,9 +608,7 @@ class ShowPage(Page):
                 FieldPanel('show_start_time'),
                 FieldPanel('show_end_time'),
                 FieldPanel('public'),
-                FieldPanel('organizers', widget=forms.CheckboxSelectMultiple),
-                FieldPanel('location', widget=forms.RadioSelect),
-                FieldPanel('sponsors', widget=forms.CheckboxSelectMultiple),
+                # FieldPanel('location', widget=forms.RadioSelect),
             ],
             heading='Show information',
         ),

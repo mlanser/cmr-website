@@ -22,18 +22,25 @@ from base.blocks import BaseStreamBlock
 # ---------------------------------------------------------
 class BlogPageTag(TaggedItemBase):
     """
-    This model allows us to create a many-to-many relationship between
-    the BlogPage object and tags.
+    Model to create a many-to-many relationship between
+    the `BlogPage` objects and tags.
 
     https://docs.wagtail.org/en/stable/reference/pages/model_recipes.html#tagging
     """
 
-    content_object = ParentalKey('BlogPage', on_delete=models.CASCADE, related_name='tagged_items')
+    content_object = ParentalKey(
+        'blog.BlogPage', on_delete=models.CASCADE, related_name='tagged_items'
+    )
 
 
 class BlogMDPageTag(TaggedItemBase):
+    """
+    Model to create a many-to-many relationship between
+    the `BlogMDPage` objects and tags.
+    """
+
     content_object = ParentalKey(
-        'BlogMDPage', on_delete=models.CASCADE, related_name='tagged_items'
+        'blog.BlogMDPage', on_delete=models.CASCADE, related_name='tagged_items'
     )
 
 
@@ -52,13 +59,27 @@ class BlogMain(RoutablePageMixin, Page):
 
     NOTE: We use `RoutablePageMixin` to allow for custom sub-URLs for the tag views
           defined above.
+
+    TODO:
+    [ ] Finish support for `BlogMDPage`
+    [ ] Add `BlogMDPage` children to `get_posts` method
+    [ ] Add `faker` factory in `factories.py`
     """
 
     # --------------------------------
     # Database fields
     # --------------------------------
     # Text to be displayed on the sidebar in the `About` tile.
-    about = RichTextField(help_text='Text to describe this section', blank=True)
+    about = RichTextField(blank=True, help_text='Text to describe this section')
+    about_title = models.CharField(blank=True, max_length=255)
+    about_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
+    )
 
     # Max recent items to show on blog landing page
     max_recent = models.IntegerField(
@@ -75,7 +96,9 @@ class BlogMain(RoutablePageMixin, Page):
     # Editor panels configuration
     # --------------------------------
     content_panels = Page.content_panels + [
-        FieldPanel('introduction'),
+        FieldPanel('about'),
+        FieldPanel('about_title'),
+        FieldPanel('about_image'),
         FieldPanel('max_recent'),
         InlinePanel('banner_images', label='Banner images'),
     ]
@@ -95,12 +118,15 @@ class BlogMain(RoutablePageMixin, Page):
     # --------------------------------
     page_description = 'Use this content type for the blog landing page.'
 
+    def __str__(self):
+        return f'BlogMain - {self.title}'
+
     # Method to access the children of the blog landing page (i.e. `BlogPage`
     # and `BlogMDPage` objects).
     def children(self):
         return self.get_children().specific().live()
 
-    # This defines a Custom view that utilizes Tags. This view will return all
+    # This defines a custom view that utilizes Tags. This view will return all
     # related BlogPages for a given Tag or redirect back to the BlogIndexPage.
     # More information on RoutablePages is at
     # https://docs.wagtail.org/en/stable/reference/contrib/routablepage.html
@@ -111,19 +137,25 @@ class BlogMain(RoutablePageMixin, Page):
             tag = Tag.objects.get(slug=tag)
         except Tag.DoesNotExist:
             if tag:
-                msg = 'There are no blog posts tagged with "{}"'.format(tag)
+                msg = f'There is no blog content tagged with "{tag}"'
                 messages.add_message(request, messages.INFO, msg)
             return redirect(self.url)
 
         posts = self.get_posts(tag=tag)
-        context = {'self': self, 'tag': tag, 'posts': posts}
-        return render(request, 'blog/blog_index_page.html', context)
+        context = {
+            'self': self,
+            'tag': tag,
+            'posts': posts,
+            'header': f'Blog posts tagged with: {tag}',
+        }
+        # TODO: Check if this is the correct template
+        return render(request, 'blog/blog_main.html', context)
 
     def serve_preview(self, request, mode_name):
         # Needed for previews to work
         return self.serve(request)
 
-    # Returns the child BlogPage objects for this BlogPageIndex.
+    # Returns the child BlogPage objects for this BlogMain page.
     # If a tag is used then it will filter the posts by tag.
     def get_posts(self, tag=None):
         posts = BlogPage.objects.live().descendant_of(self)
@@ -135,19 +167,14 @@ class BlogMain(RoutablePageMixin, Page):
     def get_child_tags(self):
         tags = []
         for post in self.get_posts():
-            # Not tags.append() because we don't want a list of lists
+            # Not using `tags.append()` as we do not want a list of lists
             tags += post.get_tags
-        tags = sorted(set(tags))
-        return tags
+        return sorted(set(tags))
 
-    # Overrides the context to list all child items, that are live, by the
-    # date that they were published
+    # Override default context to list all child items
+    #
+    # Docs:
     # https://docs.wagtail.org/en/stable/getting_started/tutorial.html#overriding-context
-    # def get_context(self, request):
-    #     context = super().get_context(request)
-    #     context['posts'] = BlogPage.objects.descendant_of(self).live().order_by('-date_published')
-    #     return context
-
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
 
@@ -157,15 +184,17 @@ class BlogMain(RoutablePageMixin, Page):
             'text': self.banner_images.first().text if self.banner_images.first() else None,
         }
 
+        # blog_pages = BlogPage.objects.descendant_of(self).live().order_by('-date_published')
         blog_pages = self.get_children().live().order_by('-first_published_at')
         context['show_promo'] = True
         context['promo'] = blog_pages.first()
+        context['header'] = 'Recent blog posts'
 
         # Exclude first item and get up to max which is used as 'promo' item
         if self.max_recent > 1:
-            context['recent_posts'] = blog_pages[1 : (max(2, self.max_recent + 1))]
+            context['posts'] = blog_pages[1 : (max(2, self.max_recent + 1))]
         else:
-            context['recent_posts'] = blog_pages[1:]
+            context['posts'] = blog_pages[1:]
 
         return context
 
@@ -184,6 +213,8 @@ class BlogPage(Page):
 
           More docs:
           https://docs.wagtail.org/en/stable/topics/pages.html#inline-models
+
+    [ ] TODO: Add `faker` factory in `factories.py`
     """
 
     # --------------------------------
@@ -237,6 +268,30 @@ class BlogPage(Page):
         MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
     ]
 
+    # --------------------------------
+    # Parent page / subpage type rules
+    # --------------------------------
+    parent_page_types = ['blog.BlogMain']
+    subpage_types = []
+
+    # --------------------------------
+    # Misc fields, helpers, and custom methods
+    # --------------------------------
+    page_description = 'Use this content type for common blog page content.'
+
+    @property
+    def get_tags(self):
+        """
+        Similar to the authors function above we're returning all the tags that
+        are related to the blog post into a list we can access on the template.
+        We're additionally adding a URL to access BlogPage objects with that tag
+        """
+        tags = self.tags.all()
+        base_url = self.get_parent().url
+        for tag in tags:
+            tag.url = f'{base_url}tags/{tag.slug}/'
+        return tags
+
     def authors(self):
         """
         Returns the BlogPage's related people. Again note that we are using
@@ -253,29 +308,8 @@ class BlogPage(Page):
             )
         ]
 
-    @property
-    def get_tags(self):
-        """
-        Similar to the authors function above we're returning all the tags that
-        are related to the blog post into a list we can access on the template.
-        We're additionally adding a URL to access BlogPage objects with that tag
-        """
-        tags = self.tags.all()
-        base_url = self.get_parent().url
-        for tag in tags:
-            tag.url = f'{base_url}tags/{tag.slug}/'
-        return tags
-
-    # --------------------------------
-    # Parent page / subpage type rules
-    # --------------------------------
-    parent_page_types = ['blog.BlogMain']
-    subpage_types = []
-
-    # --------------------------------
-    # Misc fields, helpers, and custom methods
-    # --------------------------------
-    page_description = 'Use this content type for common blog page content.'
+    def __str__(self):
+        return f'BlogPage - {self.title}'
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
@@ -301,7 +335,8 @@ class BlogMDPage(Page):
 
     NOTE: This version is designed for content using Markdown format.
 
-    TODO: NEED TO FIX THIS PAGE TYPE TO PROPERLY USE MARKDOWN FORMAT.
+    [ ] TODO: NEED TO FIX THIS PAGE TYPE TO PROPERLY USE MARKDOWN FORMAT.
+    [ ] TODO: Add `faker` factory in `factories.py`
     """
 
     # --------------------------------
@@ -341,7 +376,7 @@ class BlogMDPage(Page):
         FieldPanel('intro'),
         FieldPanel('body'),
         MultipleChooserPanel(
-            'blog_person_relationship',
+            'blogMD_person_relationship',
             chooser_field_name='person',
             heading='Authors',
             label='Author',
@@ -355,6 +390,33 @@ class BlogMDPage(Page):
     promote_panels = [
         MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
     ]
+
+    # --------------------------------
+    # Parent page / subpage type rules
+    # --------------------------------
+    parent_page_types = ['blog.BlogMain']
+    subpage_types = []
+
+    # --------------------------------
+    # Misc fields, helpers, and custom methods
+    # --------------------------------
+    page_description = 'Use this content type for common blog page content.'
+
+    @property
+    def get_tags(self):
+        """
+        Similar to the authors function above we're returning all the tags that
+        are related to the blog post into a list we can access on the template.
+        We're additionally adding a URL to access BlogPage objects with that tag
+        """
+        tags = self.tags.all()
+        base_url = self.get_parent().url
+        for tag in tags:
+            tag.url = f'{base_url}tags/{tag.slug}/'
+        return tags
+
+    def __str__(self):
+        return f'BlogMDPage - {self.title}'
 
     def authors(self):
         """
@@ -371,30 +433,6 @@ class BlogMDPage(Page):
                 'person'
             )
         ]
-
-    @property
-    def get_tags(self):
-        """
-        Similar to the authors function above we're returning all the tags that
-        are related to the blog post into a list we can access on the template.
-        We're additionally adding a URL to access BlogPage objects with that tag
-        """
-        tags = self.tags.all()
-        base_url = self.get_parent().url
-        for tag in tags:
-            tag.url = f'{base_url}tags/{tag.slug}/'
-        return tags
-
-    # --------------------------------
-    # Parent page / subpage type rules
-    # --------------------------------
-    parent_page_types = ['blog.BlogMain']
-    subpage_types = []
-
-    # --------------------------------
-    # Misc fields, helpers, and custom methods
-    # --------------------------------
-    page_description = 'Use this content type for common blog page content.'
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
@@ -424,7 +462,9 @@ class BlogPerson(Orderable, models.Model):
     the `ParentalKey` and `ForeignKey` fields.
     """
 
-    page = ParentalKey('Blog', related_name='blog_person_relationship', on_delete=models.CASCADE)
+    page = ParentalKey(
+        'blog.BlogPage', related_name='blog_person_relationship', on_delete=models.CASCADE
+    )
     person = models.ForeignKey(
         'base.Person', related_name='person_blog_relationship', on_delete=models.CASCADE
     )
@@ -433,29 +473,31 @@ class BlogPerson(Orderable, models.Model):
 
 
 class BlogMDPerson(Orderable, models.Model):
-    page = ParentalKey('BlogMD', related_name='blog_person_relationship', on_delete=models.CASCADE)
+    page = ParentalKey(
+        'blog.BlogMDPage', related_name='blogMD_person_relationship', on_delete=models.CASCADE
+    )
     person = models.ForeignKey(
-        'base.Person', related_name='person_blog_relationship', on_delete=models.CASCADE
+        'base.Person', related_name='person_blogMD_relationship', on_delete=models.CASCADE
     )
 
     panels = [FieldPanel('person')]
 
 
 class BlogRelatedLink(Orderable, RelatedLink):
-    page = ParentalKey(BlogPage, on_delete=models.CASCADE, related_name='related_links')
+    page = ParentalKey('blog.BlogPage', on_delete=models.CASCADE, related_name='related_links')
 
 
 class BlogMDRelatedLink(Orderable, RelatedLink):
-    page = ParentalKey(BlogMDPage, on_delete=models.CASCADE, related_name='related_links')
+    page = ParentalKey('blog.BlogMDPage', on_delete=models.CASCADE, related_name='related_links')
 
 
 class BlogBannerImage(Orderable, BannerImage):
-    page = ParentalKey(BlogMain, on_delete=models.CASCADE, related_name='banner_images')
+    page = ParentalKey('blog.BlogMain', on_delete=models.CASCADE, related_name='banner_images')
 
 
 class BlogGalleryImage(Orderable, GalleryImage):
-    page = ParentalKey(BlogPage, on_delete=models.CASCADE, related_name='gallery_images')
+    page = ParentalKey('blog.BlogPage', on_delete=models.CASCADE, related_name='gallery_images')
 
 
 class BlogMDGalleryImage(Orderable, GalleryImage):
-    page = ParentalKey(BlogMDPage, on_delete=models.CASCADE, related_name='gallery_images')
+    page = ParentalKey('blog.BlogMDPage', on_delete=models.CASCADE, related_name='gallery_images')

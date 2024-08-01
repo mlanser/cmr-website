@@ -1,20 +1,18 @@
 from factory import Faker
 from factory.django import DjangoModelFactory
 
-from locations.models import Location
+from base.models import Person
 
 
-class LocationFactory(DjangoModelFactory):
+class PersonFactory(DjangoModelFactory):
     class Meta:
-        model = Location
+        model = Person
 
-    name = Faker('name')
+    first_name = Faker('first_name')
+    last_name = Faker('last_name')
     street = Faker('street_address')
     city = Faker('city')
     state = Faker('state')
-    zip = Faker('zipcode')
-    virtual = Faker('boolean', chance_of_getting_true=50)
-    url = Faker('url')
-    map = Faker('url')
-    description = Faker('text', max_nb_chars=40, ext_word_list=None)
+    zip = Faker('postcode')
+    email = Faker('ascii_safe_email')
     # image = Faker('image_url', width=None, height=None, category=None, randomize=None)

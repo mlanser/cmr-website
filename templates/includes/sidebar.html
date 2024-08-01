@@ -1,5 +1,15 @@
 {% load static wagtailcore_tags %}
 <div class="sidebar">
+    {% if page.about %}
+    <section>
+        {% if page.about_image %}
+        <span class="image fit"><img src="{% static 'images/sample03-551x297.jpg' %}" alt="Lorem ipsum" /></span>
+        {% endif %}
+        <h3>{% firstof page.about_title 'About' %}</h3>
+        {{ page.about|richtext }}
+    </section>
+    <hr />
+    {% endif %}
     <section>
         <span class="image fit"><img src="{% static 'images/sample03-551x297.jpg' %}" alt="Lorem ipsum" /></span>
         <h3>About This Section</h3>
