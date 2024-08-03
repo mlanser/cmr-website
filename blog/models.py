@@ -33,17 +33,6 @@ class BlogPageTag(TaggedItemBase):
     )
 
 
-class BlogMDPageTag(TaggedItemBase):
-    """
-    Model to create a many-to-many relationship between
-    the `BlogMDPage` objects and tags.
-    """
-
-    content_object = ParentalKey(
-        'blog.BlogMDPage', on_delete=models.CASCADE, related_name='tagged_items'
-    )
-
-
 # ---------------------------------------------------------
 #           C O R E   P A G E   M O D E L S
 # ---------------------------------------------------------
@@ -61,8 +50,7 @@ class BlogMain(RoutablePageMixin, Page):
           defined above.
 
     TODO:
-    [ ] Finish support for `BlogMDPage`
-    [ ] Add `BlogMDPage` children to `get_posts` method
+    [ ] Add support for Markdown constent (e.g. `BlogMDPage`, etc.)
     [ ] Add `faker` factory in `factories.py`
     """
 
@@ -111,7 +99,7 @@ class BlogMain(RoutablePageMixin, Page):
     # Parent page / subpage type rules
     # --------------------------------
     parent_page_types = ['home.HomePage']
-    subpage_types = ['blog.BlogPage', 'blog.BlogMDPage']
+    subpage_types = ['blog.BlogPage']
 
     # --------------------------------
     # Misc fields, helpers, and custom methods
@@ -121,8 +109,8 @@ class BlogMain(RoutablePageMixin, Page):
     def __str__(self):
         return f'BlogMain - {self.title}'
 
-    # Method to access the children of the blog landing page (i.e. `BlogPage`
-    # and `BlogMDPage` objects).
+    # Method to access children of the blog landing page (i.e. `BlogPage`
+    # objects).
     def children(self):
         return self.get_children().specific().live()
 
@@ -327,129 +315,6 @@ class BlogPage(Page):
             return None
 
 
-class BlogMDPage(Page):
-    """
-    -- DO NOT USE AS IS! --
-
-    Blog Page - Markdown Format
-
-    NOTE: This version is designed for content using Markdown format.
-
-    [ ] TODO: NEED TO FIX THIS PAGE TYPE TO PROPERLY USE MARKDOWN FORMAT.
-    [ ] TODO: Add `faker` factory in `factories.py`
-    """
-
-    # --------------------------------
-    # Database fields
-    # --------------------------------
-    date = models.DateField('Publish date', blank=True, null=True)
-    tags = ClusterTaggableManager(through=BlogPageTag, blank=True)
-    subtitle = models.CharField(blank=True, max_length=255)
-    intro = models.CharField(
-        help_text='Text to describe this blog post', blank=True, max_length=255
-    )
-    # -- TODO: CHANGE TO MARKDOWN FIELD --
-    body = StreamField(
-        BaseStreamBlock(),
-        verbose_name='Page body',
-        blank=True,
-        use_json_field=True,
-        help_text='Content for blog page using RichText format.',
-    )
-
-    # --------------------------------
-    # Search index configuration
-    # --------------------------------
-    search_fields = Page.search_fields + [
-        index.SearchField('intro'),
-        index.SearchField('body'),
-        index.FilterField('date'),
-    ]
-
-    # --------------------------------
-    # Editor panels configuration
-    # --------------------------------
-    content_panels = Page.content_panels + [
-        FieldPanel('date'),
-        FieldPanel('tags'),
-        FieldPanel('subtitle'),
-        FieldPanel('intro'),
-        FieldPanel('body'),
-        MultipleChooserPanel(
-            'blogMD_person_relationship',
-            chooser_field_name='person',
-            heading='Authors',
-            label='Author',
-            panels=None,
-            min_num=1,
-        ),
-        InlinePanel('gallery_images', label='Gallery images'),
-        InlinePanel('related_links', label='Related links'),
-    ]
-
-    promote_panels = [
-        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
-    ]
-
-    # --------------------------------
-    # Parent page / subpage type rules
-    # --------------------------------
-    parent_page_types = ['blog.BlogMain']
-    subpage_types = []
-
-    # --------------------------------
-    # Misc fields, helpers, and custom methods
-    # --------------------------------
-    page_description = 'Use this content type for common blog page content.'
-
-    @property
-    def get_tags(self):
-        """
-        Similar to the authors function above we're returning all the tags that
-        are related to the blog post into a list we can access on the template.
-        We're additionally adding a URL to access BlogPage objects with that tag
-        """
-        tags = self.tags.all()
-        base_url = self.get_parent().url
-        for tag in tags:
-            tag.url = f'{base_url}tags/{tag.slug}/'
-        return tags
-
-    def __str__(self):
-        return f'BlogMDPage - {self.title}'
-
-    def authors(self):
-        """
-        Returns the BlogPage's related people. Again note that we are using
-        the ParentalKey's related_name from the BlogPersonRelationship model
-        to access these objects. This allows us to access the Person objects
-        with a loop on the template. If we tried to access the blog_person_
-        relationship directly we'd print `blog.BlogPersonRelationship.None`
-        """
-        # Only return authors that are not in draft
-        return [
-            n.person
-            for n in self.blog_person_relationship.filter(person__live=True).select_related(
-                'person'
-            )
-        ]
-
-    def get_context(self, request, *args, **kwargs):
-        context = super().get_context(request, *args, **kwargs)
-
-        context['show_meta'] = True
-        context['show_intro'] = False
-        context['is_markdown'] = False  # TODO: SWITCH TO `TRUE` ONCE MODEL IS FIXED
-
-        return context
-
-    def main_image(self):
-        if gallery_item := self.gallery_images.first():
-            return gallery_item.image
-        else:
-            return None
-
-
 # ---------------------------------------------------------
 #          M I S C   H E L P E R   C L A S S E S
 # ---------------------------------------------------------
@@ -472,23 +337,8 @@ class BlogPerson(Orderable, models.Model):
     panels = [FieldPanel('person')]
 
 
-class BlogMDPerson(Orderable, models.Model):
-    page = ParentalKey(
-        'blog.BlogMDPage', related_name='blogMD_person_relationship', on_delete=models.CASCADE
-    )
-    person = models.ForeignKey(
-        'base.Person', related_name='person_blogMD_relationship', on_delete=models.CASCADE
-    )
-
-    panels = [FieldPanel('person')]
-
-
 class BlogRelatedLink(Orderable, RelatedLink):
     page = ParentalKey('blog.BlogPage', on_delete=models.CASCADE, related_name='related_links')
-
-
-class BlogMDRelatedLink(Orderable, RelatedLink):
-    page = ParentalKey('blog.BlogMDPage', on_delete=models.CASCADE, related_name='related_links')
 
 
 class BlogBannerImage(Orderable, BannerImage):
@@ -497,7 +347,3 @@ class BlogBannerImage(Orderable, BannerImage):
 
 class BlogGalleryImage(Orderable, GalleryImage):
     page = ParentalKey('blog.BlogPage', on_delete=models.CASCADE, related_name='gallery_images')
-
-
-class BlogMDGalleryImage(Orderable, GalleryImage):
-    page = ParentalKey('blog.BlogMDPage', on_delete=models.CASCADE, related_name='gallery_images')

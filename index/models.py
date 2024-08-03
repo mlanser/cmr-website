@@ -1,7 +1,7 @@
 from wagtail.models import Page
 
-from blog.models import BlogMDPage
-from sections.models import SectionPage, SectionMDPage
+from blog.models import BlogPage
+from sections.models import SectionPage
 
 
 class TagIndexPage(Page):
@@ -15,9 +15,8 @@ class TagIndexPage(Page):
     def get_context(self, request):
         # Filter by tag
         tag = request.GET.get('tag')
-        pages = BlogMDPage.objects.filter(tags__name=tag)
+        pages = BlogPage.objects.filter(tags__name=tag)
         pages += SectionPage.objects.filter(tags__name=tag)
-        pages += SectionMDPage.objects.filter(tags__name=tag)
 
         # Update template context
         context = super().get_context(request)

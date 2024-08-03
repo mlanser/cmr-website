@@ -7,8 +7,8 @@ from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel, PageC
 from wagtail.models import Page, Orderable
 
 from base.models import BannerImage
-from blog.models import BlogPage, BlogMDPage
-from sections.models import SectionPage, SectionMDPage
+from blog.models import BlogPage
+from sections.models import SectionPage
 
 
 # ---------------------------------------------------------
@@ -123,12 +123,7 @@ class HomePage(Page):
     # Parent page / subpage type rules
     # --------------------------------
     parent_page_types = ['wagtailcore.Page']
-    subpage_types = [
-        'sections.SectionMain',
-        'blog.BlogMain',
-        'base.StandardPage',
-        'base.StandardMDPage',
-    ]
+    subpage_types = ['sections.SectionMain', 'blog.BlogMain', 'base.StandardPage']
 
     # --------------------------------
     # Misc fields, helpers, and custom methods
@@ -145,8 +140,8 @@ class HomePage(Page):
         context['is_home'] = True
 
         context['recent_posts'] = (
-            self.get_descendents()
-            .type(SectionPage, SectionMDPage, BlogPage, BlogMDPage)
+            self.get_descendants()
+            .type(SectionPage, BlogPage)
             .live()
             .order_by('-first_published_at')
         )

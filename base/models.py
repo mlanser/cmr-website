@@ -44,7 +44,7 @@ from base.blocks import BaseStreamBlock
 # ---------------------------------------------------------
 #         C O R E   H E L P E R   C L A S S E S
 # ---------------------------------------------------------
-@register_setting(icon='address-card')
+@register_setting(icon='site')
 class ContactSettings(ClusterableModel, BaseGenericSetting):
     email_cmr = models.EmailField(
         help_text='Email address for CMR', verbose_name='CMR email', blank=True
@@ -151,30 +151,6 @@ class ContactSettings(ClusterableModel, BaseGenericSetting):
         blank=True,
     )
 
-    terms_page = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='T&Cs page',
-        help_text='Select T&Cs page for links in footer.',
-    )
-    privacy_page = models.ForeignKey(
-        'wagtailcore.Page',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        verbose_name='Privacy page',
-        help_text='Select privacy page for links in footer.',
-    )
-    rss_link = models.URLField(
-        help_text='Link for RSS feed.',
-        verbose_name='RSS link',
-        blank=True,
-    )
-
     panels = [
         MultiFieldPanel(
             [
@@ -205,14 +181,6 @@ class ContactSettings(ClusterableModel, BaseGenericSetting):
             ],
             'Visiting Hours',
         ),
-        MultiFieldPanel(
-            [
-                PageChooserPanel('terms_page', 'base.StandardMDPage'),
-                PageChooserPanel('privacy_page', 'base.StandardMDPage'),
-                FieldPanel('rss_link'),
-            ],
-            'Links to T&Cs and RSS feed',
-        ),
     ]
 
 
@@ -225,8 +193,35 @@ class SiteSettings(BaseSiteSetting):
         default='Carolina Model Railroaders',
     )
 
+    terms_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='T&Cs page',
+        help_text='Select T&Cs page for links in footer.',
+    )
+    privacy_page = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Privacy page',
+        help_text='Select privacy page for links in footer.',
+    )
+    rss_link = models.URLField(
+        help_text='Link for RSS feed.',
+        verbose_name='RSS link',
+        blank=True,
+    )
+
     panels = [
         FieldPanel('title_suffix'),
+        PageChooserPanel('terms_page', 'base.StandardPage'),
+        PageChooserPanel('privacy_page', 'base.StandardPage'),
+        FieldPanel('rss_link'),
     ]
 
 
@@ -876,76 +871,4 @@ class StandardPage(Page):
         context['show_meta'] = True
         context['show_intro'] = False
         context['is_richtext'] = True
-        return context
-
-
-class StandardMDPage(Page):
-    """
-    -- DO NOT USE AS IS! --
-
-    Standard Page - Markdown Format
-
-    NOTE: This version is designed for content using Markdown format.
-
-    TODO:
-    [ ] NEED TO FIX THIS PAGE TYPE TO PROPERLY USE MARKDOWN FORMAT.
-    [ ] Add `faker` factory in `factories.py`
-    """
-
-    # --------------------------------
-    # Database fields
-    # --------------------------------
-    intro = models.CharField(max_length=255)
-    image = models.ForeignKey(
-        'wagtailimages.Image',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name='+',
-        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
-    )
-    body = RichTextField(
-        blank=True,
-        help_text='Create a plain page without sidebar using RichText format.',
-    )
-
-    # --------------------------------
-    # Editor panels & search index configuration
-    # --------------------------------
-    content_panels = Page.content_panels + [
-        FieldPanel('intro'),
-        FieldPanel('body'),
-        FieldPanel('image'),
-    ]
-
-    promote_panels = [
-        MultiFieldPanel(Page.promote_panels, 'Common page configuration'),
-    ]
-
-    search_fields = Page.search_fields + [
-        index.SearchField('body'),
-        index.SearchField('intro'),
-    ]
-
-    # --------------------------------
-    # Parent page / subpage type rules
-    # --------------------------------
-    parent_page_types = ['home.HomePage']
-    subpage_types = []
-
-    # --------------------------------
-    # Misc fields, helpers, and custom methods
-    # --------------------------------
-    page_description = 'Use this content type for pages without sidebar (e.g. legal, T&C, etc.).'
-    template = 'base/standard_page.html'
-
-    def __str__(self):
-        return f'Standard MD page - {self.title}'
-
-    def get_context(self, request, *args, **kwargs):
-        context = super().get_context(request, *args, **kwargs)
-
-        context['show_meta'] = True
-        context['show_intro'] = False
-        context['is_markdown'] = False  # TODO: CHANGE TO `TRUE` WHEN FIXED
         return context

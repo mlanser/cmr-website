@@ -45,11 +45,17 @@
 						<p><a href="https://www.instagram.com/{{ instagram }}">@{{ instagram }}</a></p>
 					</li>
 					{% endif %}
-					{% if visit_addr %}
+					{% if addr %}
 					<li>
 						<span class="icon-wrapper"><span class="icon solid fa-map-marker-alt"></span></span>
 						<h3>Club Location</h3>
-						<p>{% if map %}<a href="{{ map }}" target="_blank">{% endif %}{{ addr|linebreaks }}{% if map %}</a>{% endif %}</p>
+						<p>
+						{% if map %}
+							<a href="{{ map }}" target="_blank">{{ addr|linebreaksbr }}</a>
+						{% else %}
+							{{ addr|linebreaksbr }}
+						{% endif %}
+						</p>
 					</li>
 					{% endif %}
 					<li>
