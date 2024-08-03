@@ -193,6 +193,11 @@ class SiteSettings(BaseSiteSetting):
         default='Carolina Model Railroaders',
     )
 
+    copyright_text = models.TextField(
+        default='Carolina Model Railroaders, Inc.',
+        help_text='Copyright text to display in the footer.',
+    )
+
     terms_page = models.ForeignKey(
         'wagtailcore.Page',
         null=True,
@@ -219,61 +224,11 @@ class SiteSettings(BaseSiteSetting):
 
     panels = [
         FieldPanel('title_suffix'),
+        FieldPanel('copyright_text'),
         PageChooserPanel('terms_page', 'base.StandardPage'),
         PageChooserPanel('privacy_page', 'base.StandardPage'),
         FieldPanel('rss_link'),
     ]
-
-
-class CopyrightText(
-    DraftStateMixin,
-    RevisionMixin,
-    PreviewableMixin,
-    TranslatableMixin,
-    models.Model,
-):
-    """
-    Editable text for the copyright text in the website footer.
-
-    It is registered using `register_snippet` as a function in `wagtail_hooks.py`
-    to be grouped with the `Person` model inside the same main menu item. It is made
-    accessible on the template via a template tag defined in base/templatetags/
-    navigation_tags.py
-
-    TODO:
-    [ ] Add `faker` factory in `factories.py`
-    [ ] Add seeding function for DEV environment
-    """
-
-    body = models.TextField(
-        help_text='Copyright text to display in the footer.',
-    )
-
-    revisions = GenericRelation(
-        'wagtailcore.Revision',
-        content_type_field='base_content_type',
-        object_id_field='object_id',
-        related_query_name='copyright_text',
-        for_concrete_model=False,
-    )
-
-    panels = [
-        FieldPanel('body'),
-        PublishingPanel(),
-    ]
-
-    def __str__(self):
-        return 'Copyright text'
-
-    def get_preview_template(self, request, mode_name):
-        return 'base.html'
-
-    def get_preview_context(self, request, mode_name):
-        return {'copyright_text': self.body}
-
-    class Meta(TranslatableMixin.Meta):
-        verbose_name = 'Copyright text'
-        verbose_name_plural = 'Copyright text'
 
 
 class FooterText(
@@ -870,5 +825,6 @@ class StandardPage(Page):
 
         context['show_meta'] = True
         context['show_intro'] = False
+        context['is_markdown'] = False
         context['is_richtext'] = True
         return context

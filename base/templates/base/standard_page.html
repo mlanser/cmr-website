@@ -22,11 +22,7 @@
 
         <!-- Content -->
         <div class="content">
-            {% if is_markdown %}
-            {{ page.body|markdown|safe }}
-            {% else %}
             {{ page.body|richtext }}
-            {% endif %}
         </div>
 
     </div>

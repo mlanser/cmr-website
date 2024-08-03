@@ -9,7 +9,7 @@ from wagtail.snippets.models import register_snippet
 from wagtail.snippets.views.snippets import SnippetViewSet, SnippetViewSetGroup
 
 from base.filters import RevisionFilterSetMixin
-from base.models import CopyrightText, FooterText, Person
+from base.models import FooterText, Person
 
 
 @hooks.register('insert_global_admin_css')
@@ -55,20 +55,6 @@ class PersonViewSet(SnippetViewSet):
     filterset_class = PersonFilterSet
 
 
-class CopyrightTextFilterSet(RevisionFilterSetMixin, WagtailFilterSet):
-    class Meta:
-        model = CopyrightText
-        fields = {
-            'live': ['exact'],
-        }
-
-
-class CopyrightTextViewSet(SnippetViewSet):
-    model = CopyrightText
-    search_fields = ('body',)
-    filterset_class = CopyrightTextFilterSet
-
-
 class FooterTextFilterSet(RevisionFilterSetMixin, WagtailFilterSet):
     class Meta:
         model = FooterText
@@ -87,7 +73,7 @@ class DefaultSnippetViewSetGroup(SnippetViewSetGroup):
     menu_label = 'Default snippets'
     menu_icon = 'cogs'  # change as required
     menu_order = 300  # will put in 4th place (000 being 1st, 100 2nd)
-    items = (PersonViewSet, CopyrightTextViewSet, FooterTextViewSet)
+    items = (PersonViewSet, FooterTextViewSet)
 
 
 # When using a SnippetViewSetGroup class to group several SnippetViewSet classes together,

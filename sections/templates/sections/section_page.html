@@ -37,9 +37,9 @@
         <div class="content">
             {% with page.main_image as main_image %}
                 {% if main_image %}
-                    <span class="image fit">{% image main_image.image fill-1080x720 %}</span><p class="credits"><a href="#">{{ main_image.credit_text }}</a></p>
+                    <span class="image fit">{% image main_image.image fill-1200x800 %}</span><p class="credits"><a href="#">{{ main_image.credit_text }}</a></p>
                 {% else %}
-                    <span class="image fit"><img src="{% static 'images/pic07-1080x720.jpg' %}" alt="" /></span>
+                    <span class="image fit"><img src="{% static 'images/pic07-1200x800.jpg' %}" alt="" /></span>
                 {% endif %}
             {% endwith %}
             {% if is_markdown %}

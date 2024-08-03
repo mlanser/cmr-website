@@ -10,7 +10,7 @@ from factory import Faker
 from wagtail.core.models import Page
 from wagtail.rich_text import RichText
 
-from base.models import CopyrightText, FooterText, Person, StandardPage
+from base.models import FooterText, Person, StandardPage
 from blog.models import BlogMain, BlogPage
 from home.models import HomePage
 
@@ -194,9 +194,6 @@ class Command(BaseCommand):
 
         self.stdout.write('Creating footer text ...')
         FooterText.objects.create(body=self.fake_stream_field())
-
-        self.stdout.write('Creating copyright text ...')
-        CopyrightText.objects.create(body=self.fake_stream_field())
 
     def create_images(self, image_count):
         # image_files = list(FIXTURE_MEDIA_DIR.iterdir())

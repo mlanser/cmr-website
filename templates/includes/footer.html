@@ -1,20 +1,23 @@
-{% load copyright_tags footer_tags wagtailcore_tags %}
+{% load footer_tags wagtailcore_tags wagtailsettings_tags %}
+{% get_settings as cmr_settings %}
+{% with cmr_settings.base.SiteSettings as cmr %}
 <footer id="footer">
 	<div class="inner">
 		{% get_footer_text %}
-		{% get_copyright_text %}
-		{% if terms_page or privacy_page or rss_url %}
+		<p class="copyright">&copy; 1973-{% now "Y" %} {% firstof cmr.copyright_text "All rights reserved." %}</p>
+		{% if cmr.terms_page or cmr.privacy_page or cmr.rss_url %}
 		<ul class="menu">
-			{% if terms_page %}
-			<li><a href="{% pageurl terms_page %}">Terms<span> of Use</span></a></li>
+			{% if cmr.terms_page %}
+			<li><a href="{% pageurl cmr.terms_page %}">Terms<span> of Use</span></a></li>
 			{% endif %}
-			{% if privacy_page %}
-			<li><a href="{% pageurl privacy_page %}">Privacy<span> Policy</span></a></li>
+			{% if cmr.privacy_page %}
+			<li><a href="{% pageurl cmr.privacy_page %}">Privacy<span> Policy</span></a></li>
 			{% endif %}
-			{% if rss_url %}
-			<li><a href="{{ rss_link }}">RSS</a></li>
+			{% if cmr.rss_url %}
+			<li><a href="{{ cmr.rss_link }}">RSS</a></li>
 			{% endif %}
 		</ul>
 		{% endif %}
 	</div>
 </footer>
+{% endwith %}
