@@ -22,6 +22,7 @@
         <base target="_blank">
         {% endif %}
 
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/fontawesome-all.min.css' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'assets/css/main.css' %}" />
 		<noscript>
 			<link rel="stylesheet" type="text/css" href="{% static 'assets/css/noscript.css' %}" />
@@ -41,13 +42,17 @@
 		<section id="main" class="wrapper sidebar right">
 			<div class="inner">
 				<header class="major">
-					<h2>Section Page Main Header (H2)</h2>
-					<p>Sub-header line with a bit more description.</p>
-				</header>
+					<h2>Blog Page Main Header (H2)</h2>
+					<div class="metadata">
+						<span class="icon solid fa-calendar-alt"></span><span class="date">{% now "M j, Y" %}</span>
+						| <span class="icon solid fa-tags"></span>
+							<a class="tags" href="#">tagOne</a> &nbsp; <a class="tags" href="#">tagTwo</a> &nbsp; <a class="tags" href="#">tagThree</a>
+					</div>
+					</header>
 
 				<!-- Content -->
 				<div class="content">
-					<a href="#" class="image fit"><img src="{% static 'images/sample01-551x297.jpg' %}" alt="Lorem ipsum" /></a>
+					<img class="image fit" src="{% static 'images/sample01-551x297.jpg' %}" alt="Lorem ipsum" />
 					<h3>This is content section header (H3)</h3>
 					<p>Use pages like this for regular content such as descriptions and outlines of projects, exhibits, and more. This can also be used as a blog post template.</p>
 					<p>Please refer to the <a href="{% url 'theme_elements' %}">elements page</a> for a complete list of available page elements and how they're rendered on this site.</p>

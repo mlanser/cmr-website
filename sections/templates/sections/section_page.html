@@ -9,11 +9,11 @@
 
         <!-- Content Header -->
         <header class="major">
-            <h2>{{ page.title }}</h2>
+            <h2>{{ self.title }}</h2>
             {% if show_meta %}
-            <p class="metadata">
-                <span class="icon solid fa-calendar-alt"></span><span class="date">{{ page.date }}</span>
-                {% with tags=page.tags.all %}
+            <div class="metadata">
+                <span class="icon solid fa-calendar-alt"></span><span class="date">{{ self.first_published_at|date:'M j, Y' }}</span>
+                {% with tags=self.tags.all %}
                     {% if tags %}
                     | <span class="icon solid fa-tags"></span>
                     {% for tag in tags %}
@@ -21,7 +21,7 @@
                     {% endfor %}
                     {% endif %}
                 {% endwith %}
-                {% with authors=page.authors.all %}
+                {% with authors=self.authors.all %}
                     {% if authors %}
                     | <span class="icon solid fa-user"></span>
                     {% for author in authors %}
@@ -29,13 +29,13 @@
                     {% endfor %}
                     {% endif %}
                 {% endwith %}
-            </p>
+            </div>
             {% endif %}
         </header>
 
         <!-- Content -->
         <div class="content">
-            {% with page.main_image as main_image %}
+            {% with self.main_image as main_image %}
                 {% if main_image %}
                     <span class="image fit">{% image main_image.image fill-1200x800 %}</span><p class="credits"><a href="#">{{ main_image.credit_text }}</a></p>
                 {% else %}
@@ -43,9 +43,9 @@
                 {% endif %}
             {% endwith %}
             {% if is_markdown %}
-            {{ page.body|markdown|safe }}
+            {{ self.body|markdown|safe }}
             {% else %}
-            {{ page.body|richtext }}
+            {{ self.body|richtext }}
             {% endif %}
         </div>
 
@@ -54,5 +54,5 @@
 
     </div>
 </section>
-<!-- p><a href="{{ page.get_parent.url }}">Return to {{ page.get_parent.title }}</a></p -->
+<!-- p><a href="{{ self.get_parent.url }}">Return to {{ self.get_parent.title }}</a></p -->
 {% endblock %}

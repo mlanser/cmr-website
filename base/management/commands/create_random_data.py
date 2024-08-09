@@ -91,7 +91,7 @@ class Command(BaseCommand):
         homepage.show_recent = True
         homepage.max_recent = 6
         homepage.show_contact_info = True
-        homepage.promo_page = BlogPage.objects.live().first()
+        homepage.promo_link = BlogPage.objects.live().first()
 
         homepage.save()
 

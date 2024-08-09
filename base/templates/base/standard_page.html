@@ -4,27 +4,27 @@
 {% block body_class %}template-standard-page{% endblock %}
 
 {% block content %}
-<section id="main" class="wrapper">
+<main id="main" class="wrapper">
     <div class="inner">
 
         <!-- Content Header -->
         <header class="major">
-            <h2>{{ page.title }}</h2>
+            <h1>{{ self.title }}</h1>
             {% if show_meta %}
-            <p class="metadata">
-                <span class="icon solid fa-calendar-alt"></span><span class="date">{{ page.last_published_at }}</span>
-            </p>
+            <div class="metadata">
+                <span class="icon solid fa-calendar-alt"></span><span class="date">{{ self.last_published_at|date:'M j, Y' }}</span>
+            </div>
             {% endif %}
             {% if show_intro %}
-            <p class="intro">{{ page.intro }}</p>
+            <p class="intro">{{ self.intro }}</p>
             {% endif %}
         </header>
 
         <!-- Content -->
         <div class="content">
-            {{ page.body|richtext }}
+            {{ self.body }}
         </div>
 
     </div>
-</section>
+</main>
 {% endblock %}

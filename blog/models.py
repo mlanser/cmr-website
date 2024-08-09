@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.shortcuts import redirect, render
 
@@ -8,13 +9,26 @@ from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.fields import ParentalKey
 from taggit.models import Tag, TaggedItemBase
 
-from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel, MultipleChooserPanel
+from wagtail.admin.panels import (
+    FieldPanel,
+    InlinePanel,
+    MultiFieldPanel,
+    MultipleChooserPanel,
+    PageChooserPanel,
+)
 from wagtail.fields import RichTextField, StreamField
 from wagtail.models import Page, Orderable
 from wagtail.search import index
 
-from base.models import RelatedLink, GalleryImage, BannerImage
+from base.models import RelatedLink, GalleryImage, BannerImage, SiteSettings
 from base.blocks import BaseStreamBlock
+
+
+# ---------------------------------------------------------
+#               M I S C   C O N S T A N T S
+# ---------------------------------------------------------
+PAGINATION_MIN_PAGES = 7
+PAGINATION_BOUNDARY = 3
 
 
 # ---------------------------------------------------------
@@ -58,8 +72,8 @@ class BlogMain(RoutablePageMixin, Page):
     # Database fields
     # --------------------------------
     # Text to be displayed on the sidebar in the `About` tile.
-    about = RichTextField(blank=True, help_text='Text to describe this section')
     about_title = models.CharField(blank=True, max_length=255)
+    about_desc = RichTextField(blank=True, help_text='Text to describe this section')
     about_image = models.ForeignKey(
         'wagtailimages.Image',
         null=True,
@@ -67,6 +81,21 @@ class BlogMain(RoutablePageMixin, Page):
         on_delete=models.SET_NULL,
         related_name='+',
         help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
+    )
+    about_link = models.ForeignKey(
+        'wagtailcore.Page',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='Optional link',
+        help_text='Select page with additional related content',
+    )
+
+    show_tag_cloud = models.BooleanField(
+        default=True,
+        verbose_name='Show tag cloud',
+        help_text='Show tag cloud tile on sidebar?',
     )
 
     # Max recent items to show on blog landing page
@@ -84,9 +113,16 @@ class BlogMain(RoutablePageMixin, Page):
     # Editor panels configuration
     # --------------------------------
     content_panels = Page.content_panels + [
-        FieldPanel('about'),
-        FieldPanel('about_title'),
-        FieldPanel('about_image'),
+        MultiFieldPanel(
+            [
+                FieldPanel('about_title'),
+                FieldPanel('about_desc'),
+                FieldPanel('about_image'),
+                PageChooserPanel('about_link'),
+            ],
+            heading="Sidebar 'About' tile",
+        ),
+        FieldPanel('show_tag_cloud'),
         FieldPanel('max_recent'),
         InlinePanel('banner_images', label='Banner images'),
     ]
@@ -109,10 +145,27 @@ class BlogMain(RoutablePageMixin, Page):
     def __str__(self):
         return f'BlogMain - {self.title}'
 
-    # Method to access children of the blog landing page (i.e. `BlogPage`
-    # objects).
-    def children(self):
-        return self.get_children().specific().live()
+    # Method to access (published) children of the blog landing
+    # page (i.e. `BlogPage`objects) soterd by date
+    def get_published_posts(self, tag=None):
+        if tag:
+            return (
+                BlogPage.objects.live()
+                .descendant_of(self)
+                .filter(tags=tag)
+                .order_by('-first_published_at')
+                .specific()
+            )
+            # return self.get_children().type(BlogPage).live().filter(tags=tag).order_by('-first_published_at').specific()
+        else:
+            return (
+                BlogPage.objects.live()
+                .descendant_of(self)
+                .order_by('-first_published_at')
+                .specific()
+            )
+            # return self.get_children().type(BlogPage).live().order_by('-first_published_at').specific()
+        # return self.get_children().specific().live()
 
     # This defines a custom view that utilizes Tags. This view will return all
     # related BlogPages for a given Tag or redirect back to the BlogIndexPage.
@@ -129,13 +182,24 @@ class BlogMain(RoutablePageMixin, Page):
                 messages.add_message(request, messages.INFO, msg)
             return redirect(self.url)
 
-        posts = self.get_posts(tag=tag)
+        # Get all blog pages filtered by tag
+        all_posts = self.get_published_posts(tag=tag)
+        paginator = self.get_paginator(all_posts, all=True)
+
+        header = f"Blog posts tagged with: '{tag}'"
         context = {
             'self': self,
+            'show_banner': True,
+            'banner': self.banner_images.first() or None,
             'tag': tag,
-            'posts': posts,
-            'header': f'Blog posts tagged with: {tag}',
+            'tag_list': self.get_tags_for_published_posts(),
+            'show_promo': False,
+            'promo': None,
+            'header': header,
+            'posts': self.get_paginated_posts(paginator, request),
+            'paginator': self.get_paginator_items(paginator, request),
         }
+
         # TODO: Check if this is the correct template
         return render(request, 'blog/blog_main.html', context)
 
@@ -143,21 +207,80 @@ class BlogMain(RoutablePageMixin, Page):
         # Needed for previews to work
         return self.serve(request)
 
-    # Returns the child BlogPage objects for this BlogMain page.
-    # If a tag is used then it will filter the posts by tag.
-    def get_posts(self, tag=None):
-        posts = BlogPage.objects.live().descendant_of(self)
-        if tag:
-            posts = posts.filter(tags=tag)
-        return posts
-
     # Returns the list of Tags for all child posts of this BlogPage.
-    def get_child_tags(self):
+    def get_tags_for_published_posts(self):
         tags = []
-        for post in self.get_posts():
-            # Not using `tags.append()` as we do not want a list of lists
+        for post in self.get_published_posts():
+            # We do NOT use `tags.append()` as we
+            # don't want a list of lists
             tags += post.get_tags
         return sorted(set(tags))
+
+    def get_paginator(self, all_posts, all=False):
+        return (
+            Paginator(all_posts[1:], self.max_recent)
+            if (len(all_posts) > 1 and not all)
+            else Paginator(all_posts, self.max_recent)
+        )
+
+    def get_paginated_posts(self, paginator, request):
+        page = request.GET.get('page')
+
+        try:
+            posts = paginator.page(page)
+        except PageNotAnInteger:
+            posts = paginator.page(1)
+        except EmptyPage:
+            posts = paginator.page(paginator.num_pages)
+
+        return posts
+
+    def get_paginator_items(self, paginator, request):
+        """
+        If we have more pagination pages than `max_pages`, then we'll show
+        ellipsis in the middle of the paginator row.
+
+        Here we create a list that can be parsed in the pagination templates,
+        and we use `0` as a placeholder for the ellipsis.
+        """
+
+        # Max items/page icons to show in paginator.
+        site_settings = SiteSettings.for_request(request)
+        max_pages = max(PAGINATION_MIN_PAGES, int(site_settings.pagination_max_pages))
+
+        # Can we comfortably display all items?
+        if paginator.num_pages <= max_pages:
+            return range(1, paginator.num_pages + 1)
+
+        # If we have too many paginator pages, then we'll need to figure where to
+        # show page numbers and where to show ellipsis.
+        lower_boundary = PAGINATION_BOUNDARY
+        upper_boundary = paginator.num_pages - PAGINATION_BOUNDARY + 1
+        ellipse = True
+
+        page = request.GET.get('page')
+        page = min(max(1, int(page)), paginator.num_pages)
+
+        items = []
+
+        for i in range(1, paginator.num_pages + 1):
+            if i <= lower_boundary:
+                items.append(i)
+            elif i == (lower_boundary + 1) and i == page:
+                items.append(i)
+            elif i == (upper_boundary - 1) and i == page:
+                items.append(i)
+            elif i >= upper_boundary:
+                items.append(i)
+            elif i == page:
+                items.append(i)
+                ellipse = True
+            else:
+                if ellipse:
+                    items.append(0)
+                ellipse = False
+
+        return items
 
     # Override default context to list all child items
     #
@@ -167,22 +290,24 @@ class BlogMain(RoutablePageMixin, Page):
         context = super().get_context(request, *args, **kwargs)
 
         context['show_banner'] = True
-        context['banner'] = {
-            'image': self.banner_images.first().image if self.banner_images.first() else None,
-            'text': self.banner_images.first().text if self.banner_images.first() else None,
-        }
+        context['banner'] = self.banner_images.first() or None
 
-        # blog_pages = BlogPage.objects.descendant_of(self).live().order_by('-date_published')
-        blog_pages = self.get_children().live().order_by('-first_published_at')
-        context['show_promo'] = True
-        context['promo'] = blog_pages.first()
-        context['header'] = 'Recent blog posts'
+        context['tag_list'] = self.get_tags_for_published_posts()
+
+        # Get all blog pages and sort by date
+        all_posts = self.get_published_posts()
+
+        context['show_promo'] = len(all_posts) >= 1
+        context['promo'] = all_posts.first() or None
+        context['header'] = (
+            'Recent blog posts' if len(all_posts) >= 1 else 'No additional posts found'
+        )
 
         # Exclude first item and get up to max which is used as 'promo' item
-        if self.max_recent > 1:
-            context['posts'] = blog_pages[1 : (max(2, self.max_recent + 1))]
-        else:
-            context['posts'] = blog_pages[1:]
+        paginator = self.get_paginator(all_posts)
+
+        context['posts'] = self.get_paginated_posts(paginator, request)
+        context['paginator'] = self.get_paginator_items(paginator, request)
 
         return context
 
@@ -306,13 +431,13 @@ class BlogPage(Page):
         context['show_intro'] = False
         context['is_richtext'] = True
 
+        context['gallery'] = self.gallery_images.all()
+
         return context
 
     def main_image(self):
-        if gallery_item := self.gallery_images.first():
-            return gallery_item.image
-        else:
-            return None
+        # return gallery_item if (gallery_item := self.gallery_images.first()) else None
+        return self.gallery_images.first() or None
 
 
 # ---------------------------------------------------------

@@ -1,0 +1,31 @@
+{% load static wagtailcore_tags %}
+
+{% if paginator|length > 1 %}
+<ul class="pagination">
+    <li>
+        {% if posts.has_previous %}
+        <a href="?page={{ posts.previous_page_number }}" class="button small">Prev</a>
+        {% else %}
+        <span class="button small disabled small">Prev</span>
+        {% endif %}
+    </li>
+
+    {% for page_num in paginator %}
+        {% if page_num != 0 %}
+        <li>
+            <a href="?page={{ page_num }}" class="page {% if page_num == posts.number %} active{% endif %}">{{ page_num }}</a>
+        </li>
+        {% else %}
+        <li><span>&hellip;</span></li>
+        {% endif %}
+    {% endfor %}
+
+    <li>
+        {% if posts.has_next %}
+        <a href="?page={{ posts.next_page_number }}" class="button small">Next</a>
+        {% else %}
+        <span class="button small disabled small">Next</span>
+        {% endif %}
+    </li>
+</ul>
+{% endif %}

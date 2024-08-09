@@ -1,9 +1,10 @@
-{% load copyright_tags footer_tags wagtailcore_tags %}
+{% load footer_tags wagtailcore_tags %}
 <footer id="footer">
+	<div class="inner footertext">
+		<p>Testing some footer text.</p>
+	</div>
+	<hr />
 	<div class="inner">
-		{% if footertext and False %}
-		<p class="footertext">Optional footer text goes here.</p>
-		{% endif %}
 		<p class="copyright">&copy; 1973-2024 Carolina Model Railroaders, Inc. All rights reserved.</p>
 		<ul class="menu">
 			<li><a href="#">Terms<span> of Use</span></a></li>

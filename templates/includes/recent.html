@@ -1,83 +1,23 @@
 {% load static wagtailcore_tags wagtailimages_tags %}
 
-{% for post in posts %}
+<div class="posts">
+    {% for post in posts %}
     <section class="post">
-        <a href="{% pageurl post %}" class="image"><img src="{% image post.image max-551x297 %}" alt="{{ post.title }}" /></a>
-        <div class="content">
-            <a href="{% pageurl post %}"><h3>{{ post.title }}</h3></a>
-            {{ post.intro|richtext }}
-            <ul class="actions">
-                <li><a href="{% pageurl post %}" class="button">More</a></li>
-            </ul>
+        <a href="{% pageurl post %}" class="image">
+            {% picture post.main_image.image format-{avif,webp,jpeg} max-297x297 %}
+        </a>
+        <div class="content list">
+            <h3><a href="{% pageurl post %}">{{ post.title }}</a></h3>
+            <div class="metadata"><span class="icon solid fa-calendar-alt"></span><span class="date">{{ post.first_published_at|date:'M j, Y' }}</span></div>
+            <p>{{ post.intro|richtext|truncatewords:25 }}</p>
         </div>
+        <ul class="actions list">
+            <li><a href="{% pageurl post %}" class="button small">More</a></li>
+        </ul>
     </section>
-{% empty %}
-    {% if DEBUG %}
-    {# Show default content if no slide is defined #}
-    <section class="post">
-        <span class="image"><img src="{% static 'images/pic02-1200x800.jpg'%}" alt="" /></span>
-        <div class="content">
-            <h3>Congue portitor</h3>
-            <p>Aenean ultricies magna non sapien rhoncus, ac ullamcorper lorem convallis. Quisque at venenatis nisi, amet finibus mauris. Sed sodales ultricies eros, sit amet sodales sapien.</p>
-            <ul class="actions">
-                <li><a href="#" class="button">More</a></li>
-            </ul>
-        </div>
-    </section>
-    <section class="post">
-        <span class="image"><img src="{% static 'images/pic03-1200x800.jpg'%}" alt="" /></span>
-        <div class="content">
-            <h3>Duis nisl euismod</h3>
-            <p>Ultrices nec metus. Aenean ultricies magna et sapien rhoncus ac ullamcorper lorem convallis. Quisque at venenatis nisi amet finibus mauris. Sed sodales ultricies magna etiam.</p>
-            <ul class="actions">
-                <li><a href="#" class="button">More</a></li>
-            </ul>
-        </div>
-    </section>
-    <section class="post">
-        <span class="image"><img src="{% static 'images/pic04-1200x800.jpg'%}" alt="" /></span>
-        <div class="content">
-            <h3>Elementum auctor</h3>
-            <p>Quis interdum. Lorem quis lacus justo. Sed libero condimentum vehicula sem vel, mattis amet mauris. Nullam lacinia sit amet felis vel vestibulum. Morbi aliquam aenean.</p>
-            <ul class="actions">
-                <li><a href="#" class="button">More</a></li>
-            </ul>
-        </div>
-    </section>
-    <section class="post">
-        <span class="image"><img src="{% static 'images/pic05-1200x800.jpg'%}" alt="" /></span>
-        <div class="content">
-            <h3>Urna vel lacinia</h3>
-            <p>Integer vel tincidunt lacus. Nulla augue nunc, eleifend quis leo ac, maximus interdum tellus. Etiam at vestibulum felis, id efficitur risus. Praesent ac nulla ex. Duis elementum.</p>
-            <ul class="actions">
-                <li><a href="#" class="button">More</a></li>
-            </ul>
-        </div>
-    </section>
-    <section class="post">
-        <span class="image"><img src="{% static 'images/pic06-1200x800.jpg'%}" alt="" /></span>
-        <div class="content">
-            <h3>Neque et suscipit</h3>
-            <p>Libero condimentum, vehicula sem vel, mattis mauris. Nullam lacinia sit amet felis vel vestibulum. Morbi in aliquam est. Aenean dapibus porttitor nulla ultrices venenatis.</p>
-            <ul class="actions">
-                <li><a href="#" class="button">More</a></li>
-            </ul>
-        </div>
-    </section>
-    <section class="post">
-        <span class="image"><img src="{% static 'images/pic07-1200x800.jpg'%}" alt="" /></span>
-        <div class="content">
-            <h3>Vestibulum placerat</h3>
-            <p>Tristique tellus et ullamcorper. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Praesent mauris risus, pellentesque eu leo non, tincidunt.</p>
-            <ul class="actions">
-                <li><a href="#" class="button">More</a></li>
-            </ul>
-        </div>
-    </section>
-	{% else %}
-	<!-- img src="{% static 'images/default-slide-nrhs-1920x1080-min.jpg' %}" alt="" / -->
-	<div class="content">
-		<p>There are no recent posts.</p>
-	</div>
-	{% endif %}
-{% endfor %}
+    {% empty %}
+    <div class="content">
+        <p>Sorry, there are no additional posts in this section.</p>
+    </div>
+    {% endfor %}
+</div>

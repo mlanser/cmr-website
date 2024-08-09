@@ -5,11 +5,10 @@ from wagtail.blocks import (
     StreamBlock,
     StructBlock,
     TextBlock,
-    URLBlock
+    URLBlock,
 )
 from wagtail.embeds.blocks import EmbedBlock
 from wagtail.images.blocks import ImageChooserBlock
-from wagtailmarkdown.blocks import MarkdownBlock
 
 
 class ImageBlock(StructBlock):
@@ -52,15 +51,11 @@ class BlockQuote(StructBlock):
     """
 
     text = TextBlock()
-    attribute_name = CharBlock(
-        blank=True, 
-        required=False, 
-        label="e.g. Mary Berry"
-    )
+    attribute_name = CharBlock(blank=True, required=False, label='e.g. Mary Berry')
 
     class Meta:
-        icon = "openquote"
-        template = "blocks/blockquote.html"
+        icon = 'openquote'
+        template = 'base/blocks/blockquote.html'
 
 
 class BaseStreamBlock(StreamBlock):
@@ -69,14 +64,11 @@ class BaseStreamBlock(StreamBlock):
     """
 
     heading_block = HeadingBlock()
-    paragraph_block = RichTextBlock(
-        icon="pilcrow", 
-        template="blocks/paragraph_block.html"
-    )
+    paragraph_block = RichTextBlock(icon='pilcrow', template='base/blocks/paragraph_block.html')
     # markdown_block = MarkdownBlock(icon='code')
     image_block = ImageBlock()
     embed_block = EmbedBlock(
         help_text='Insert a URL to embed. For example, https://www.youtube.com/watch?v=SGJFWirQ3ks',
         icon='media',
-        template="blocks/embed_block.html"
+        template='base/blocks/embed_block.html',
     )

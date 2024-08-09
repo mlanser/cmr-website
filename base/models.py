@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.translation import gettext as _
 
@@ -216,10 +217,32 @@ class SiteSettings(BaseSiteSetting):
         verbose_name='Privacy page',
         help_text='Select privacy page for links in footer.',
     )
+
     rss_link = models.URLField(
         help_text='Link for RSS feed.',
         verbose_name='RSS link',
         blank=True,
+    )
+
+    tag_cloud_title = models.CharField(blank=True, max_length=255)
+    tag_cloud_desc = RichTextField(blank=True, help_text='Text to describe the tag cloud tile')
+    tag_cloud_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+',
+        help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
+    )
+
+    pagination_max_pages = models.PositiveSmallIntegerField(
+        default=10,
+        validators=[
+            MinValueValidator(7),
+            MaxValueValidator(15),
+        ],
+        help_text='Maximum number of pages (7-15) to show in pagination.',
+        verbose_name='Max pages in pagination',
     )
 
     panels = [
@@ -228,6 +251,14 @@ class SiteSettings(BaseSiteSetting):
         PageChooserPanel('terms_page', 'base.StandardPage'),
         PageChooserPanel('privacy_page', 'base.StandardPage'),
         FieldPanel('rss_link'),
+        MultiFieldPanel(
+            [
+                FieldPanel('tag_cloud_title'),
+                FieldPanel('tag_cloud_desc'),
+                FieldPanel('tag_cloud_image'),
+            ],
+            heading='Tag cloud tile',
+        ),
     ]
 
 
@@ -251,7 +282,10 @@ class FooterText(
     [ ] Add seeding function for DEV environment
     """
 
-    body = RichTextField()
+    body = RichTextField(
+        blank=True,
+        verbose_name='Optional footer text',
+    )
 
     revisions = GenericRelation(
         'wagtailcore.Revision',
@@ -782,8 +816,11 @@ class StandardPage(Page):
         related_name='+',
         help_text='Landscape mode only; horizontal width between 1000px and 3000px.',
     )
-    body = RichTextField(
+    body = StreamField(
+        BaseStreamBlock(),
+        verbose_name='Page body',
         blank=True,
+        use_json_field=True,
         help_text='Create a plain page without sidebar using RichText format.',
     )
 

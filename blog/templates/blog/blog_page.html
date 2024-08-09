@@ -9,41 +9,39 @@
 
         <!-- Content Header -->
         <header class="major">
-            <h2>{{ page.title }}</h2>
+            <h1>{{ self.title }}</h1>
             {% if show_meta %}
-                <p class="metadata">
-                    <span class="icon solid fa-calendar-alt"></span><span class="date">{{ page.date }}</span>
-                    {% if page.get_tags %}
+                <div class="metadata">
+                    <span class="icon solid fa-calendar-alt"></span><span class="date">{{ self.first_published_at|date:'M j, Y' }}</span>
+                    {% if self.get_tags %}
                         | <span class="icon solid fa-tags"></span>
-                        {% for tag in page.get_tags %}
+                        {% for tag in self.get_tags %}
                             <a class="tags" href="{{ tag.url }}">{{ tag }}</a>
                         {% endfor %}
                     {% endif %}
-                </p>
-                {% if page.authors %}
-                <p class="metadata author">
+                </div>
+                {% if self.authors %}
+                <div class="metadata author">
                 {% for author in authors %}
                     {% picture author.image format-{avif,webp,jpeg} fill-50x50-c100 class="author avatar mini" %}
                     {{ author.first_name }} {{ author.last_name }}
                     {% endfor %}
-                </p>
+                </div>
                 {% endif %}
             {% endif %}
         </header>
 
         <!-- Content -->
         <div class="content">
-            {% with page.main_image as main_image %}
-                {% if main_image %}
-                    <span class="image fit">{% image main_image.image fill-1200x800 %}</span><p class="credits"><a href="#">{{ main_image.credit_text }}</a></p>
-                {% else %}
-                    <span class="image fit"><img src="{% static 'images/pic07-1200x800.jpg' %}" alt="" /></span>
-                {% endif %}
-            {% endwith %}
-            {% if is_markdown %}
-            {{ page.body|markdown|safe }}
+            {% if self.main_image %}
+                {% picture self.main_image.image format-{avif,webp,jpeg} fill-1200x647-c100 class="image fit" %}
+                <span class="image-credits">Credits: <a href="{{ self.main_image.credit_url }}" target="_blank">{{ self.main_image.credit_text }}</a></span>
             {% else %}
-            {{ page.body|richtext }}
+                <img class="image fit" src="{% static 'images/sample01-551x297.jpg' %}" alt="Sample Image 01" />
+            {% endif %}
+            {{ self.body }}
+            {% if gallery or True %}
+            {% include "includes/gallery.html" %}
             {% endif %}
         </div>
 
@@ -53,7 +51,7 @@
     </div>
 </section>
 {# Link back to blog landing page #}
-{% if page.get_parent.url != page.url %}
-<!-- p><a href="{{ page.get_parent.url }}">Return to {{ page.get_parent.title }}</a></p -->
+{% if self.get_parent.url != self.url %}
+<!-- p><a href="{{ self.get_parent.url }}">Return to {{ self.get_parent.title }}</a></p -->
 {% endif %}
 {% endblock content %}

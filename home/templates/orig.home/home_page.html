@@ -19,17 +19,17 @@ Delete this entire EXTRA_CSS BLOCK if you want to remove the welcome screen!
 	</header>
 
 	<!-- Banner -->
-	{% if page.show_banner %}
+	{% if self.show_banner %}
 	{% include "includes/banner.html" %}
 	{% endif %}
 
 	<!-- Promoted Content -->
-	{% if page.show_promo %}
+	{% if self.show_promo %}
 	{% include "includes/promo.html" %}
 	{% endif %}
 
 	<!-- Happening - Events, Shows, Calendar -->
-	{% if page.show_happening %}
+	{% if self.show_happening %}
 	<section id="two" class="wrapper content-pad">
 		<div class="inner">
 			<div class="features {% if show_newsletter %}three{% else %}two{% endif %}">
@@ -52,19 +52,18 @@ Delete this entire EXTRA_CSS BLOCK if you want to remove the welcome screen!
 	{% endblock content %}
 
 	<!-- Recent Content -->
-	{% if page.show_recent %}
+	{% if self.show_recent %}
 	<section id="three" class="wrapper style2">
 		<div class="inner">
 			<h2>{% if header_recent %}{{ header_recent }}{% else %}Recent Posts{% endif %}</h2>
-			<div class="posts">
-				{% include "includes/recent.html" %}
-			</div>
+			{% include "includes/recent.html" %}
+			{% include "includes/pagination.html" %}
 		</div>
 	</section>
 	{% endif %}
 
 	<!-- Contact -->
-	{% if page.show_contact_info %}
+	{% if self.show_contact_info %}
 	{% include "includes/contact.html" %}
 	{% endif %}
 {% endblock %}

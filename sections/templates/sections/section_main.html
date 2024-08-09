@@ -10,7 +10,7 @@
         <!-- Content -->
         <div class="content">
             <!-- Happening - Events, Shows, Calendar -->
-            {% if page.show_happening %}
+            {% if self.show_happening %}
             <section id="two" class="wrapper content-pad">
                 <div class="inner">
                     <div class="features two">
@@ -21,13 +21,12 @@
             {% endif %}
 
             <!-- Recent Content -->
-            {% if page.show_recent %}
+            {% if self.show_recent %}
             <section id="three" class="wrapper style2">
                 <div class="inner">
                     <h2>{% if header_recent %}{{ header_recent }}{% else %}Recent Posts{% endif %}</h2>
-                    <div class="posts">
-                        {% include "includes/recent.html" %}
-                    </div>
+                    {% include "includes/recent.html" %}
+                    {% include "includes/pagination.html" %}
                 </div>
             </section>
             {% endif %}

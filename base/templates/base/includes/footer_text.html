@@ -1,5 +1,7 @@
 {% load wagtailcore_tags %}
 {% if footer_text %}
-<p class="footertext">{{ footer_text|richtext }}</p>
+<div class="inner footertext">
+{{ footer_text|richtext }}
+</div>
 <hr />
 {% endif %}

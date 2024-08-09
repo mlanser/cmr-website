@@ -2,8 +2,8 @@
 {% get_settings as cmr_settings %}
 {% with cmr_settings.base.SiteSettings as cmr %}
 <footer id="footer">
+	{% get_footer_text %}
 	<div class="inner">
-		{% get_footer_text %}
 		<p class="copyright">&copy; 1973-{% now "Y" %} {% firstof cmr.copyright_text "All rights reserved." %}</p>
 		{% if cmr.terms_page or cmr.privacy_page or cmr.rss_url %}
 		<ul class="menu">

@@ -1,0 +1,12 @@
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% if banner %}
+<section id="banner" class="static">
+	{% image banner.image max-2000x900 as tmp_img %}
+	<article class="visible top" style="background-image: url('{{ tmp_img.url }}'); {{ tmp_img.background_position_style }}">
+		<div class="inner">
+			<h2>Our blog</h2>
+		</div>
+	</article>
+</section>
+{% endif %}

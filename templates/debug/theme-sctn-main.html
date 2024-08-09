@@ -22,6 +22,7 @@
         <base target="_blank">
         {% endif %}
 
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/fontawesome-all.min.css' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'assets/css/main.css' %}" />
 		<noscript>
 			<link rel="stylesheet" type="text/css" href="{% static 'assets/css/noscript.css' %}" />
@@ -60,9 +61,8 @@
 					<section id="three" class="wrapper style2">
 						<div class="inner">
 							<h2>Recent Posts</h2>
-							<div class="posts">
-								{% include "debug/theme-recent.html" %}
-							</div>
+							{% include "debug/theme-recent.html" %}
+							{% include "debug/theme-pagination.html" %}
 						</div>
 					</section>
 					{% endif %}

@@ -1,47 +1,60 @@
-{% load static wagtailcore_tags %}
+{% load static wagtailcore_tags wagtailsettings_tags wagtailimages_tags %}
 <div class="sidebar">
-    {% if page.about %}
+    {% if self.about_desc %}
     <section>
-        {% if page.about_image %}
-        <span class="image fit"><img src="{% static 'images/sample03-551x297.jpg' %}" alt="Lorem ipsum" /></span>
+        {% if self.about_image %}
+        <span class="image fit">
+            {% picture self.about_image format-{avif,webp,jpeg} max-297x297 %}
+        </span>
         {% endif %}
-        <h3>{% firstof page.about_title 'About' %}</h3>
-        {{ page.about|richtext }}
+        <h3>{% firstof self.about_title 'About' %}</h3>
+        {{ self.about_desc|richtext }}
+        {% if self.about_link %}
+        <ul class="actions">
+            <li><a href="{% pageurl self.about_link %}" class="button small">More</a></li>
+        </ul>
+        {% endif %}
     </section>
     <hr />
     {% endif %}
-    <section>
-        <span class="image fit"><img src="{% static 'images/sample03-551x297.jpg' %}" alt="Lorem ipsum" /></span>
-        <h3>About This Section</h3>
-        <p>This is an example of content that has CTAs, but no links from the header or the image.</p>
-        <p>Sed tristique purus vitae volutpat commodo suscipit amet sed nibh. Proin a ullamcorper sed blandit. Sed tristique purus vitae volutpat commodo suscipit ullamcorper commodo suscipit amet sed nibh. Proin a ullamcorper sed blandit..</p>
-        <footer>
-            <ul class="actions">
-                <li><a href="#" class="button small">Action 1</a></li>
-                <li><a href="#" class="button small">Action 2</a></li>
-            </ul>
-        </footer>
-    </section>
-    <hr />
+    {% if self.show_tag_cloud %}
+        {% get_settings as cmr_settings %}
+        {% with cmr_settings.base.SiteSettings as cmr %}
+        <section>
+            {% if cmr.tag_cloud_image %}
+            <span class="image fit">
+                {% picture cmr.tag_cloud_image format-{avif,webp,jpeg} max-297x297 %}
+            </span>
+            {% endif %}
+            <h3>{% firstof cmr.tag_cloud_title 'Common Tags' %}</h3>
+            {{ cmr.tag_cloud_desc|richtext }}
+            <div>
+                {% for tag in tag_list %}
+                {% if not forloop.first %} {% endif %}<a class="tags" href="{{ tag.url }}">{{ tag }}</a>
+                {% empty %}
+                <p>Sorry, there are no tags to display.</p>
+                {% endfor %}
+            </div>
+        </section>
+        <hr />
+        {% endwith %}
+    {% endif %}
     <section>
         <a href="#" class="image fit"><img src="{% static 'images/sample03-551x297.jpg' %}" alt="Lorem ipsum" /></a>
         <a href="#"><h3>Example with Linked Image</h3></a>
         <p>This is an example has a linked image, header, and button. This would normally be used links to special content, etc. that we want to highlight.</p>
-        <footer>
-            <ul class="actions">
-                <li><a href="#" class="button small">Learn More</a></li>
-            </ul>
-        </footer>
+        <ul class="actions">
+            <li><a href="#" class="button small">Learn More</a></li>
+        </ul>
     </section>
     <hr />
     <section>
         <a href="#" class="image fit"><img src="{% static 'images/sample04-551x297.jpg' %}" alt="Lorem ipsum" /></a>
         <h3>Amet Lorem Tempus</h3>
         <p>Sed tristique purus vitae volutpat commodo suscipit amet sed nibh. Proin a ullamcorper sed blandit. Sed tristique purus vitae volutpat commodo suscipit ullamcorper sed blandit lorem ipsum dolore.</p>
-        <footer>
-            <ul class="actions">
-                <li><a href="#" class="button small">Learn More</a></li>
-            </ul>
-        </footer>
+        <ul class="actions">
+            <li><a href="#" class="button small">Action 1</a></li>
+            <li><a href="#" class="button small">Action 2</a></li>
+        </ul>
     </section>
 </div>

@@ -1,35 +1,24 @@
 {% load static wagtailcore_tags wagtailimages_tags %}
 
-<section id="one" class="wrapper major-pad">
-    <div class="inner">
-        <section class="spotlight">
-            {% if promo.title and promo.intro and promo.main_image %}
-            <a href="{% pageurl promo %}" class="image"><img src="{% image promo.main_image max-551x297 %}" alt="{{ promo.title }}" /></a>
-            <div class="content">
-                <a href="{% pageurl promo %}"><h2>{{ promo.title }}</h2></a>
-                <p>{{ promo.intro|richtext }}</p>
-                <ul class="actions">
-                    <li><a href="{% pageurl promo %}" class="button">More</a></li>
-                </ul>
-            </div>
-
-            {% elif DEBUG %}
-            <div class="content">
-                <a href="#" class="image"><img src="{% static 'images/sample01-551x297.jpg'%}" alt="Sample image" /></a>
-                <a href="#"><h2>Title of promoted content</h2></a>
-                <p>This is the intro section of the promoted content. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id interdum magna, ultricies aliquet curabitur sed metus pellentesque, ornare sapien quis.</p>
-                <ul class="actions">
-                    <li><a href="#" class="button">More</a></li>
-                </ul>
-            </div>
-
-            {% else %}
-            <span class="image"><img src="{% static 'images/blank-551x297.jpg'%}" alt="Sample image" /></span>
-            <div class="content">
-                <h2>Missing Title or Intro or Image</h2>
-                <p>Missing content</p>
-            </div>
-            {% endif %}
-        </section>
+<section class="spotlight">
+    {% if promo %}
+    <a href="{% pageurl promo %}" class="image">
+        {% picture promo.main_image.image format-{avif,webp,jpeg} fill-551x297-c100 class="image fit" %}
+    </a>
+    <div class="content">
+        <h2><a href="{% pageurl promo %}">{{ promo.title }}</a></h2>
+        <div class="metadata"><span class="icon solid fa-calendar-alt"></span><span class="date">{{ promo.first_published_at|date:'M j, Y' }}</span></div>
+        <p>{{ promo.intro|richtext|truncatewords:50 }}</p>
+        <ul class="actions">
+            <li><a href="{% pageurl promo %}" class="button">More</a></li>
+        </ul>
     </div>
+
+    {% else %}
+    <span class="image"><img src="{% static 'images/blank-551x297.jpg'%}" alt="Sample image" /></span>
+    <div class="content">
+        <h2>Missing Title or Intro or Image</h2>
+        <p>Missing content</p>
+    </div>
+    {% endif %}
 </section>

@@ -1,11 +1,11 @@
 {% load wagtailcore_tags navigation_tags %}
-<h1><a href="{% if site_root %}{% pageurl site_root %}{% else %}/{% endif %}">CMR &amp; NRHS</a></h1>
 {% get_site_root as site_root %}
+<h1><a href="{% pageurl site_root %}">CMR &amp; NRHS</a></h1>
 <nav id="nav">
     <ul>
-        <li><a href="{% pageurl site_root %}">{% if site_root.title %}{{ site_root.title }}{% else %}Home{% endif %}</a></li>
+        <li><a href="{% pageurl site_root %}">{% firstof site_root.title 'Home' %}</a></li>
         {% for menuitem in site_root.get_children.live.in_menu %}
-        <li><a href="{% pageurl menuitem %}">{{ menuitem.title }}</a></li>
+        <li><a href="{% pageurl menuitem %}">{{ menuitem.slug }}</a></li>
         {% endfor %}
 
         {% if DEBUG %}

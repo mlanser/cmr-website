@@ -62,8 +62,11 @@
 				on, off;
 
 			on = function() {
-
+				/**
+				 * [ML] TODO: Need to figure out how to properly center image all the time.
+				 */
 				$t.css('background-position', 'center 100%, center 100%, center 0px');
+				//$t.css('background-position', 'center');
 
 				$window
 					.on('scroll._parallax', function() {

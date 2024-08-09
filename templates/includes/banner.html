@@ -2,18 +2,15 @@
 
 <section id="banner">
 	<article>
-		{% if banner.image %}
-		{# Show if banner image is defined #}
-		<img src="{% image banner.image max-2000x900 %}" alt="" />
-		{% elif DEBUG %}
-		{# Show debug content if no banner image is defined and debug mode #}
-		<img src="{% static 'images/banner01-2000x900.jpg' %}" alt="" />
-		{% else %}
+	{% if banner %}
+		{% image banner.image max-2000x900 as tmp_img %}
+		<img src="{{ tmp_img.url }}" alt="{% firstof banner.caption tmp_img.alt self.title %}" />
+	{% else %}
 		{# Show blank content if no banner image is defined #}
-		<img src="{% static 'images/blank-2000x900.jpg' %}" alt="" />
-		{% endif %}
+		<img src="{% static 'images/blank-2000x900.jpg' %}" alt="Default banner" />
+	{% endif %}
 		<div class="inner">
-			<h2>{{ firstof banner.text page.title }}</h2>
+			<h2>{% firstof banner.caption self.title %}</h2>
 		</div>
 	</article>
 </section>

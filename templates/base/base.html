@@ -12,15 +12,15 @@
 	<head>
 		<title>
             {% block title %}
-				{% firstof page.seo_title page.title %}
+				{% firstof self.seo_title self.title %}
             {% endblock %}
             {% block title_suffix %}
                 | {% firstof settings.base.SiteSettings.title_suffix current_site.site_name wagtail_site %}
             {% endblock %}
 		</title>
 		<meta charset="utf-8" />
-        {% if page.search_description %}
-        <meta name="description" content="{{ page.search_description }}" />
+        {% if self.search_description %}
+        <meta name="description" content="{{ self.search_description }}" />
         {% endif %}
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 
@@ -35,18 +35,19 @@
 		<link rel="icon" type="image/png" sizes="16x16" href="{% static 'assets/favicon//favicon-16x16.png' %}">
 		<link rel="manifest" href="{% static 'assets/favicon/site.webmanifest' %}">
 
+        <link rel="stylesheet" type="text/css" href="{% static 'assets/css/fontawesome-all.min.css' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'assets/css/main.css' %}" />
 		<noscript>
 			<link rel="stylesheet" type="text/css" href="{% static 'assets/css/noscript.css' %}" />
 		</noscript>
         {% block extra_css %}
         {# Override this in templates to add extra stylesheets #}
-        {% endblock %}
+        {% endblock extra_css %}
 	</head>
 	<body class="is-preload {% block body_class %}{% endblock %}">
         {% block page_body %}
         <!-- BODY SECTION -->
-        {% endblock %}
+        {% endblock page_body %}
 
 		<!-- Footer -->
 		{% include "includes/footer.html" %}
@@ -61,6 +62,6 @@
 		<script src="{% static 'assets/js/main.js' %}"></script>
         {% block extra_js %}
         {# Override this in templates to add extra javascript #}
-        {% endblock %}
+        {% endblock extra_js %}
 	</body>
 </html>

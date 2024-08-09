@@ -49,13 +49,7 @@
 					<li>
 						<span class="icon-wrapper"><span class="icon solid fa-map-marker-alt"></span></span>
 						<h3>Club Location</h3>
-						<p>
-						{% if map %}
-							<a href="{{ map }}" target="_blank">{{ addr|linebreaksbr }}</a>
-						{% else %}
-							{{ addr|linebreaksbr }}
-						{% endif %}
-						</p>
+						<p>{% if map %}<a href="{{ map }}" target="_blank">{{ addr|linebreaksbr }}</a>{% else %}{{ addr|linebreaksbr }}{% endif %}</p>
 					</li>
 					{% endif %}
 					<li>

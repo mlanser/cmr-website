@@ -1,0 +1,129 @@
+{% load static wagtailcore_tags wagtailimages_tags %}
+<div class="gallery box alt">
+    <div class="row gtr-uniform gtr-50">
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic08-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(1)" class="hover-shadow cursor" alt="" /></span></div>
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic01-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(2)" class="hover-shadow cursor" alt="" /></span></div>
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic02-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(3)" class="hover-shadow cursor" alt="" /></span></div>
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic03-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(4)" class="hover-shadow cursor" alt="" /></span></div>
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic04-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(5)" class="hover-shadow cursor" alt="" /></span></div>
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic05-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(6)" class="hover-shadow cursor" alt="" /></span></div>
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic06-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(7)" class="hover-shadow cursor" alt="" /></span></div>
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic07-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(8)" class="hover-shadow cursor" alt="" /></span></div>
+        <div class="col-4"><span class="image fit"><img src="{% static 'images/pic08-1200x800.jpg' %}" onclick="galleryOpenModal();galleryCurrentSlide(9)" class="hover-shadow cursor" alt="" /></span></div>
+    </div>
+</div>
+
+<!-- Gallery Modal/Lightbox -->
+<div id="galleryModal" class="gallery modal">
+    <span class="close cursor" onclick="galleryCloseModal()">Close</span>
+    <div class="content">
+
+        <div class="gallerySlide">
+            <div class="slidenum">1 / 9</div>
+            <img src="{% static 'images/pic08-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <div class="gallerySlide">
+            <div class="slidenum">2 / 9</div>
+            <img src="{% static 'images/pic01-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <div class="gallerySlide">
+            <div class="slidenum">3 / 9</div>
+            <img src="{% static 'images/pic02-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <div class="gallerySlide">
+            <div class="slidenum">4 / 9</div>
+            <img src="{% static 'images/pic03-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <div class="gallerySlide">
+            <div class="slidenum">5 / 9</div>
+            <img src="{% static 'images/pic04-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <div class="gallerySlide">
+            <div class="slidenum">6 / 9</div>
+            <img src="{% static 'images/pic05-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <div class="gallerySlide">
+            <div class="slidenum">7 / 9</div>
+            <img src="{% static 'images/pic06-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <div class="gallerySlide">
+            <div class="slidenum">8 / 9</div>
+            <img src="{% static 'images/pic07-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <div class="gallerySlide">
+            <div class="slidenum">9 / 9</div>
+            <img src="{% static 'images/pic08-1200x800.jpg' %}" alt="Some alt text">
+        </div>
+
+        <!-- PREV / NEXT controls -->
+        <a class="prev" onclick="galleryNextSlide(-1)">&#10094;</a>
+        <a class="next" onclick="galleryNextSlide(1)">&#10095;</a>
+
+        <!-- Caption & Credits text -->
+        <div class="caption">
+            <p id="gallerySlideCredits"></p>
+            <p id="gallerySlideCaption"></p>
+        </div>
+
+        <!-- Thumbnail images -->
+        <div class="thumbnails row">
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic08-1200x800.jpg' %}" onclick="galleryCurrentSlide(1)" alt="One">
+                <span class="galleryCaption">Caption 1 text goes here</span>
+                <span class="galleryCredits">Credits 1 text goes here</span>
+            </div>
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic01-1200x800.jpg' %}" onclick="galleryCurrentSlide(2)" alt="Two">
+                <span class="galleryCaption">Caption 2 text goes here</span>
+                <span class="galleryCredits">Credits 2 text goes here</span>
+            </div>
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic02-1200x800.jpg' %}" onclick="galleryCurrentSlide(3)" alt="Three">
+                <span class="galleryCaption">Caption 3 text goes here</span>
+                <span class="galleryCredits">Credits 3 text goes here</span>
+            </div>
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic03-1200x800.jpg' %}" onclick="galleryCurrentSlide(4)" alt="Four">
+                <span class="galleryCaption">Caption 4 text goes here</span>
+                <span class="galleryCredits">Credits 4 text goes here</span>
+            </div>
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic04-1200x800.jpg' %}" onclick="galleryCurrentSlide(5)" alt="Five">
+                <span class="galleryCaption">Caption 5 text goes here</span>
+                <span class="galleryCredits">Credits 5 text goes here</span>
+            </div>
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic05-1200x800.jpg' %}" onclick="galleryCurrentSlide(6)" alt="Six">
+                <span class="galleryCaption">Caption 6 text goes here</span>
+                <span class="galleryCredits">Credits 6 text goes here</span>
+            </div>
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic06-1200x800.jpg' %}" onclick="galleryCurrentSlide(7)" alt="Seven">
+                <span class="galleryCaption">Caption 7 text goes here</span>
+                <span class="galleryCredits">Credits 7 text goes here</span>
+            </div>
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic07-1200x800.jpg' %}" onclick="galleryCurrentSlide(8)" alt="Eight">
+                <span class="galleryCaption">Caption 8 text goes here</span>
+                <span class="galleryCredits">Credits 8 text goes here</span>
+            </div>
+            <div class="col">
+                <img class="galleryThumb" src="{% static 'images/pic08-1200x800.jpg' %}" onclick="galleryCurrentSlide(9)" alt="Nine">
+                <span class="galleryCaption">Caption 9 text goes here</span>
+                <span class="galleryCredits">Credits 9 text goes here</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'assets/js/gallery.js' %}"></script>
+{% endblock extra_js %}

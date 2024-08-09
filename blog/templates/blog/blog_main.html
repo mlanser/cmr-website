@@ -9,24 +9,17 @@
 
         <!-- Content -->
         <div class="content">
-            <!-- Happening - Events, Shows, Calendar -->
-            {% if page.show_happening %}
-            <section id="two" class="wrapper content-pad">
-                <div class="inner">
-                    <div class="features two">
-                        {% include "includes/event-tiles.html" %}
-                    </div>
-                </div>
-            </section>
+            <!-- Promoted Content -->
+            {% if show_promo %}
+            {% include "includes/promo.html" %}
             {% endif %}
 
             <!-- Recent Content -->
             <section id="three" class="wrapper style2">
                 <div class="inner">
-                    <h2>{% if header %}{{ header_recent }}{% else %}Recent Posts{% endif %}</h2>
-                    <div class="posts">
-                        {% include "includes/recent.html" %}
-                    </div>
+                    <h2>{% firstof header 'Recent Posts' %}</h2>
+                    {% include "includes/recent.html" %}
+                    {% include "includes/pagination.html" %}
                 </div>
             </section>
         </div>

@@ -9,14 +9,14 @@
             <div class="col-md-12">
                 <div class="col-md-7">
                     <div class="row">
-                        {% if page.introduction %}
+                        {% if self.introduction %}
                             <p class="bread-detail__introduction">
-                                {{ page.introduction }}
+                                {{ self.introduction }}
                             </p>
                         {% endif %}
 
                         <div class="hidden-md-down">
-                            {{ page.body }}
+                            {{ self.body }}
                         </div>
                     </div>
                 </div>
@@ -25,18 +25,18 @@
                     <div class="row">
                         <div class="bread-detail__meta">
                             <p class="location__meta-title">Operating Status</p>
-                            {% if page.is_open %}
+                            {% if self.is_open %}
                                 This location is currently open.
                             {% else %}
                                 Sorry, this location is currently closed.
                             {% endif %}
 
                             <p class="location__meta-title">Address</p>
-                            <address>{{ page.address|linebreaks }}</address>
+                            <address>{{ self.address|linebreaks }}</address>
 
-                            {% if page.operating_hours %}
+                            {% if self.operating_hours %}
                                 <p class="location__meta-title">Opening hours</p>
-                                {% for hours in page.operating_hours %}
+                                {% for hours in self.operating_hours %}
                                     <time itemprop="openingHours" datetime="{{ hours }}" class="location__time">
                                         <span class="location__day">{{ hours.day }}</span>:
                                         <span class="location__hours">
@@ -59,7 +59,7 @@
 
                 <div class="col-md-7">
                     <div class="row hidden-md-up">
-                        {{ page.body }}
+                        {{ self.body }}
                     </div>
                 </div>
             </div>

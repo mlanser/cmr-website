@@ -39,7 +39,7 @@ class HomePage(Page):
         verbose_name='Show promoted',
         help_text='Show promoted content on home page?',
     )
-    promo_page = models.ForeignKey(
+    promo_link = models.ForeignKey(
         'wagtailcore.Page',
         null=True,
         blank=True,
@@ -92,7 +92,14 @@ class HomePage(Page):
         MultiFieldPanel(
             [
                 FieldPanel('show_promo'),
-                PageChooserPanel('promo_page', 'sections.SectionPage'),
+                PageChooserPanel(
+                    'promo_link',
+                    [
+                        'blog.BlogPage',
+                        'sections.SectionPage',
+                        'base.StandardPage',
+                    ],
+                ),
             ],
             heading='Promoted content',
         ),

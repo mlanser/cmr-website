@@ -1,4 +1,4 @@
-# Django #
+# Django & WagTail #
 *.log
 *.pot
 *.pyc
@@ -9,6 +9,8 @@ media/*.*
 media/**/*.*
 !media/.gitkeep
 !media/**/.gitkeep
+original_images/*.*
+images/*.*
 
 # Backup files #
 *.bak
